@@ -1,0 +1,61 @@
+{
+  "name": "superlogin",
+  "version": "0.1.0",
+  "description": "Powerful authentication for APIs and single page apps using the CouchDB ecosystem which supports a variety of providers.",
+  "main": "./lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/colinskow/superlogin.git"
+  },
+  "scripts": {
+    "test": "gulp"
+  },
+  "keywords": [
+    "authentication",
+    "login",
+    "PouchDB",
+    "CouchDB",
+    "Cloudant",
+    "passport",
+    "oauth",
+    "Facebook",
+    "Twitter",
+    "Node",
+    "Express"
+  ],
+  "author": "Colin Skow",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/colinskow/superlogin/issues"
+  },
+  "homepage": "https://github.com/colinskow/superlogin",
+  "dependencies": {
+    "bluebird": "^2.9.14",
+    "couch-pwd": "0.0.1",
+    "ejs": "^2.3.1",
+    "express": "^4.13.3",
+    "extend": "^2.0.0",
+    "node-uuid": "^1.4.3",
+    "nodemailer": "^1.4.0",
+    "nodemailer-stub-transport": "^0.1.4",
+    "passport": "^0.2.2",
+    "passport-http-bearer-sl": "^1.0.1",
+    "passport-local": "^1.0.0",
+    "pouchdb": "^4.0.0",
+    "pouchdb-seed-design": "0.0.6",
+    "redis": "^0.12.1",
+    "sofa-model": "^0.2.0",
+    "superagent": "^1.2.0",
+    "urlsafe-base64": "0.0.2"
+  },
+  "devDependencies": {
+    "body-parser": "^1.9.2",
+    "chai": "^1.9.1",
+    "gulp": "^3.8.6",
+    "gulp-jshint": "^1.7.1",
+    "gulp-mocha": "^0.5.1",
+    "jshint-stylish": "^0.4.0",
+    "mocha": "^1.20.1",
+    "morgan": "^1.5.2"
+  }
+}

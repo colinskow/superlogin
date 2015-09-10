@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Authentication <%= error ? 'Failed' : 'Success' %></title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+</head>
+<body>
+    <p>Session: <%- JSON.stringify(session) %></p>
+    <p>Link: <%- JSON.stringify(link) %></p>
+    <p>Error: <%- JSON.stringify(error) %></p>
+</body>
+</html>

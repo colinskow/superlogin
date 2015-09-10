@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Authentication <%= error ? 'Failed' : 'Success' %></title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+</head>
+<body>
+<script type="text/javascript">
+    if (window.opener) {
+        window.opener.focus();
+        var session = <%- JSON.stringify(session) %>;
+        var error = <%- JSON.stringify(error) %>;
+        var link = <%- JSON.stringify(link) %>;
+        if (window.opener.superlogin && window.opener.superlogin.oauthSession) {
+            window.opener.superlogin.oauthSession(error, session, link);
+        }
+    }
+    window.close();
+</script>
+</body>
+</html>

@@ -433,5 +433,5 @@ Quits Redis if that is the session adapter you are using. This is useful for cle
 
 ## Releases
 
-##### Initial Release (0.1.0) 2015-09-07
+##### Initial Release (0.1.0) 2015-09-10
 The intense power of SuperLogin is unleashed on a world that may not be ready! Tested with Node.js 0.12.7 and 4.0.0.

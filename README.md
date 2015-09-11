@@ -30,7 +30,7 @@ For issues and feature requests visit the [issue tracker](https://github.com/col
 * Ideal authentication and security solution for modern APIs and Single Page Apps
 * Supports local login with username and password using best security practices
 * Sends system emails for account confirmation, password reset, or anything else you want to configure
-* Add any other [Passport](http://passportjs.org) OAuth2 strategy with literally just a couple lines of code
+* Add any [Passport](http://passportjs.org) OAuth2 strategy with literally just a couple lines of code
 * Facebook, WindowsLive, Google, Github, and LinkedIn integration fully tested
 * Link multiple authentication strategies to the same account for user convenience
 * 100% cookie free, which means that [CSRF](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_\(CSRF\)_Prevention_Cheat_Sheet) attacks are impossible against your app

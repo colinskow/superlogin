@@ -1,6 +1,6 @@
 {
   "name": "superlogin",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Powerful authentication for APIs and single page apps using the CouchDB ecosystem which supports a variety of providers.",
   "main": "./lib/index.js",
   "repository": {
@@ -41,7 +41,7 @@
     "passport": "^0.2.2",
     "passport-http-bearer-sl": "^1.0.1",
     "passport-local": "^1.0.0",
-    "pouchdb": "^4.0.0",
+    "pouchdb": "4.0.1",
     "pouchdb-seed-design": "0.0.6",
     "redis": "^1.0.0",
     "sofa-model": "^0.2.0",

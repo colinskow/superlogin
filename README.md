@@ -177,6 +177,8 @@ Middleware that makes sure the user possesses ALL of the specified `requiredRole
 
 You can add support for any Passport OAuth2 strategy to SuperLogin with just a few lines of code. (OAuth1 strategies generally require a cookie-based session to work, so are not currently supported by SuperLogin which is sessionless.)
 
+##### Configuration
+
 The first step is to add credentials to your config file. You can skip the callback URL as it will be generated automatically. Here is how to add support for Dropbox:
 
 ```js
@@ -194,14 +196,35 @@ providers: {
 }
 ```
 
-Now all you have to do is register your new provider with SuperLogin. Simply follow this pattern:
+SuperLogin supports two types of workflows for OAuth2 providers: popup window and client access token.
+
+##### Popup Window Workflow for web browsers (desktop and mobile)
+
+Your client must create a popup window and point it to `/{provider}`, where the user will be directed to authenticate with that provider. After authentication succeeds or fails, it will call a Javascript callback on the parent window called `superlogin.oauthSession`.
+
+After completing the configuration step above, all you have to do is register your new provider with SuperLogin. Simply follow this pattern:
 
 ```js
 var DropboxStrategy = require('passport-dropbox-oauth2').Strategy;
 superlogin.registerOAuth2('dropbox', DroboxStrategy);
 ```
 
-Now, assuming your credentials are valid, you should be able to authenticate with Dropbox by opening a popup window to `/dropbox`.
+Now, assuming your credentials are valid, you should be able to authenticate with Dropbox by opening a popup window to `/dropbox`. See below in the Routes documentation for more detail.
+
+##### Client Access Token for Cordova / Phonegap and Native Apps
+
+Cordova and most native app frameworks (including iOS and Android) have plugins which authenticate a user with a provider and provide an `access_token` to the client app. All you have to do is post a request to `/{provider}/token` and include your `access_token` in the request body. SuperLogin will respond with a new session or an error message.
+
+You must use Passport strategies that accept `access_token` posted in the body of the request, such as `passport-facebook-token`, `passport-google-token`, etc.
+
+Here is how to setup the Client Access Token strategy:
+
+```js
+var FacebookTokenStrategy = require('passport-facebook-token').Strategy;
+superlogin.registerTokenProvider('facebook', FacebookTokenStrategy);
+```
+
+Note that this uses the exact settings in your config as the popup window workflow.
 
 ## Advanced Configuration
 
@@ -268,6 +291,12 @@ There is a security concern here that the session token is exposed as a query pa
 
 ##### `POST /unlink/{provider}`
 Authentication required. Removes the specified provider from the user's account. Local cannot be removed. If there is only one provider left it will fail.
+
+##### `POST /{provider}/token`
+This will invoke the client `access_token` strategy for the specified provider if you have registered it. You should include the `access_token` for the provider in the body of your request.
+
+##### `POST /link/{provider}/token`
+This will link additional providers to an already authenticated user using the client `access_token` strategy.
 
 ## Event Emitter
 
@@ -436,3 +465,6 @@ Quits Redis if that is the session adapter you are using. This is useful for cle
 
 ##### Initial Release (0.1.0) 2015-09-10
 The intense power of SuperLogin is unleashed on a world that may not be ready! Tested with Node.js 0.12.7 and 4.0.0.
+
+##### Client Access Token Strategies (0.2.0) 2015-09-13
+Added client `access_token` strategies to support OAuth2 flows from Cordova, PhoneGap, and native apps.

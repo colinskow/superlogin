@@ -325,6 +325,20 @@ Here is a full list of the events that SuperLogin emits, and parameters provided
 - `logout`: (`user_id`)
 - `logout-all`: (`user_id`)
 
+The welcome event provides username and unhashed password for normal registration, of username for Oauth registration :
+
+- `welcome`: (`userDoc`, `provider`)
+```js
+superlogin.on('welcome', function(userDoc, provider){
+  if(provider === 'local'){
+    console.log('Welcome, your login is : ' + userDoc.username + ' your password is : ' + userDoc.password);
+  }
+  else{
+    console.log('Welcome, your login is : ' + userDoc.username + ' logged in with ' + provider);
+  }
+});
+```
+
 ## Main API
 
 ##### `new SuperLogin(config, passport, userDB, couchAuthDB)`

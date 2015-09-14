@@ -133,7 +133,7 @@ describe('DBAuth', function() {
         return dbAuth.addUserDB(userDoc, 'personal', ['test'], 'private');
       })
       .then(function(finalDBName) {
-        expect(finalDBName).to.equal('test_personal$test-user(at)cool-com');
+        expect(finalDBName).to.equal('test_personal$test(2e)user(40)cool(2e)com');
         newDB = new PouchDB('http://localhost:5984/' + finalDBName);
         return newDB.get('_security');
       }).then(function(secDoc) {

@@ -312,7 +312,7 @@ superlogin.on('login', function(userDoc, provider){
 Here is a full list of the events that SuperLogin emits, and parameters provided:
 
 - `signup`: (`userDoc`, `provider`)
-- `login`: (`userDoc`, `provider`)
+- `login`: (`newSession`, `provider`)
 - `refresh`: (`newSession`)
 - `signup`: (`userDoc`, `provider`)
 - `password-reset`: (`userDoc`)

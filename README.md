@@ -180,7 +180,7 @@ If you are using [Cloudant](https://cloudant.com), then your databases are secur
 
 If, however, you are using regular CouchDB, then Admin Party is default and all your databases are readable and writable by the public until you implement the correct security measures. It is your responsibility to study up on [best security practices](http://blog.mattwoodward.com/2012/03/definitive-guide-to-couchdb.html) and apply them. To block anonymous reads across all databases you can set `require_valid_user` to `true` under `[couch_httpd_auth]` in your CouchDB config.
 
-SuperLogin also allows you to specify default `_security` roles for members and admins in the `userDBs` section of your config file. See `[config.example.js](https://github.com/colinskow/superlogin/blob/master/config.example.js)` for details.
+SuperLogin also allows you to specify default `_security` roles for members and admins in the `userDBs` section of your config file. See [`config.example.js`](https://github.com/colinskow/superlogin/blob/master/config.example.js) for details.
 
 ## Adding Providers
 
@@ -237,7 +237,7 @@ Note that this uses the exact settings in your config as the popup window workfl
 
 ## Advanced Configuration
 
-Take a look at `[config.example.js](https://github.com/colinskow/superlogin/blob/master/config.example.js)` for a complete tour of all available configuration options. You'll find a lot of cool hidden features there that aren't documented here.
+Take a look at [`config.example.js`](https://github.com/colinskow/superlogin/blob/master/config.example.js) for a complete tour of all available configuration options. You'll find a lot of cool hidden features there that aren't documented here.
 
 `/config/default.config.js` contains a list of default settings that will be assumed if you don't specify anything.
 
@@ -250,7 +250,7 @@ If you are using Cloudant authentication, the prefixed `user_id` is inserted as 
 ## Routes
 
 ##### `POST /register`
-Creates a new account with a username and password. Required fields are: `username`, `email`, `password` and `confirmPassword`. `name` is optional. Any additional fields you want to include need to be white listed under `userModel` in your config. See `[config.example.js](https://github.com/colinskow/superlogin/blob/master/config.example.js)` for details.
+Creates a new account with a username and password. Required fields are: `username`, `email`, `password` and `confirmPassword`. `name` is optional. Any additional fields you want to include need to be white listed under `userModel` in your config. See [`config.example.js`](https://github.com/colinskow/superlogin/blob/master/config.example.js) for details.
 
 If `local.sendConfirmEmail` is true, a confirmation email will be sent with a verify link. If `local.requireEmailConfirm` is true, the user will not be able to login until the confirmation is complete. If `local.loginOnRegistration` is true a session will be automatically created and sent as the response.
 
@@ -463,7 +463,7 @@ Deauthorizes every single expired session found in the user database.
 ##### `superlogin.sendEmail(templateName, email, locals)`
 Renders an email and sends it out. Server settings are specified under `mailer` in your config.
 
-* `templateName`: the name of a template object specified under `emails` in your config. See `[config.example.js](https://github.com/colinskow/superlogin/blob/master/config.example.js)` for details.
+* `templateName`: the name of a template object specified under `emails` in your config. See [`config.example.js`](https://github.com/colinskow/superlogin/blob/master/config.example.js) for details.
 * `email`: the email address that the email
 * `locals`: local variables that will be passed into the ejs template to be rendered
 

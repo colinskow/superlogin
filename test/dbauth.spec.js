@@ -2,6 +2,7 @@
 var PouchDB = require('pouchdb');
 var BPromise = require('bluebird');
 var seed = require('pouchdb-seed-design');
+var request = require('superagent');
 var expect = require('chai').expect;
 var DBAuth = require('../lib/dbauth');
 var Configure = require('../lib/configure');
@@ -38,6 +39,26 @@ var dbAuth = new DBAuth(userConfig, userDB, keysDB);
 describe('DBAuth', function() {
 
   var key, previous;
+
+  it('should create a database', function(done) {
+    var testDBName = 'sl_test_create_db';
+    checkDBExists(testDBName)
+      .then(function(result) {
+        expect(result).to.equal(false);
+        return dbAuth.createDB(testDBName);
+      })
+      .then(function() {
+        return checkDBExists(testDBName);
+      })
+      .then(function(result) {
+        expect(result).to.equal(true);
+        var destroyDB = new PouchDB('http://localhost:5984/' + testDBName);
+        return destroyDB.destroy();
+      })
+      .then(function() {
+        done();
+      });
+  });
 
   it('should generate a database access key', function(done) {
     previous = BPromise.resolve();
@@ -130,13 +151,15 @@ describe('DBAuth', function() {
     var newDB;
     previous
       .then(function() {
-        return dbAuth.addUserDB(userDoc, 'personal', ['test'], 'private');
+        return dbAuth.addUserDB(userDoc, 'personal', ['test'], 'private', [], ['admin_role'], ['member_role']);
       })
       .then(function(finalDBName) {
         expect(finalDBName).to.equal('test_personal$test(2e)user(40)cool(2e)com');
         newDB = new PouchDB('http://localhost:5984/' + finalDBName);
         return newDB.get('_security');
       }).then(function(secDoc) {
+        expect(secDoc.admins.roles[0]).to.equal('admin_role');
+        expect(secDoc.members.roles[0]).to.equal('member_role');
         expect(secDoc.members.names[1]).to.equal('key2');
         return newDB.get('_design/test');
       })
@@ -263,4 +286,20 @@ describe('DBAuth', function() {
 
 });
 
-
+function checkDBExists(dbname) {
+  var finalUrl = 'http://localhost:5984/' + dbname;
+  return BPromise.fromNode(function(callback) {
+    request.get(finalUrl)
+      .end(callback);
+  })
+    .then(function(res) {
+      var result = JSON.parse(res.text);
+      if(result.db_name) {
+        return BPromise.resolve(true);
+      }
+    }, function(err) {
+      if(err.status === 404) {
+        return BPromise.resolve(false);
+      }
+    });
+}

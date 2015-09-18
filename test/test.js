@@ -40,6 +40,10 @@ describe('SuperLogin', function() {
     userDB = new PouchDB('http://localhost:5984/sl_test-users');
     keysDB = new PouchDB('http://localhost:5984/sl_test-keys');
     app = require('./test-server')(config);
+    app.superlogin.onCreate(function(userDoc, provider) {
+      userDoc.profile = {name: userDoc.name};
+      return BPromise.resolve(userDoc);
+    });
     previous = seed(userDB, require('../designDocs/user-design'));
     previous.then(function(){
       done();
@@ -96,6 +100,7 @@ describe('SuperLogin', function() {
             expect(res.status).to.equal(200);
             expect(res.body.roles[0]).to.equal('user');
             expect(res.body.token.length).to.be.above(10);
+            expect(res.body.profile.name).to.equal(newUser.name);
             console.log('User successfully logged in');
             resolve();
             done();

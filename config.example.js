@@ -111,6 +111,12 @@ module.exports = {
       // Shared databases that you want the user to be authorized to use. These will not be prefixed, so type the exact name.
       shared: ['']
     },
+    // If you specify default roles here (and use CouchDB not Cloudant) then these will be added to the _security object
+    // of each new user database created. This is useful for preventing anonymous access.
+    defaultSecurityRoles: {
+      admins: ['$slAdmin'],
+      members: []
+    },
     // These are settings for each personal database
     model: {
      // If your database is not listed below, these default settings will be applied
@@ -124,7 +130,10 @@ module.exports = {
         designDocs: ['test'],
         permissions: ['_reader', '_replicator'],
         // 'private' or 'shared'
-        type: 'private'
+        type: 'private',
+        // Roles that will be automatically added to the db's _security object of this specific db
+        adminRoles: [],
+        memberRoles: []
       }
     },
     // Your private user databases will be prefixed with this:

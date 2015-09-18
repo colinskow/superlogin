@@ -70,6 +70,10 @@ var userConfig = new Configure({
     adapter: 'memory'
   },
   userDBs: {
+    defaultSecurityRoles: {
+      admins: ['admin_role'],
+      members: ['member_role']
+    },
     model: {
       _default: {
         designDocs: ['test'],
@@ -165,7 +169,7 @@ describe('User Model', function() {
       });
   });
 
-  it('should have created a user db with design doc', function(done) {
+  it('should have created a user db with design doc and _security', function(done) {
     console.log('Checking user db and design doc');
     userTestDB = new PouchDB('http://localhost:5984/test_usertest$superuser');
     previous
@@ -174,6 +178,11 @@ describe('User Model', function() {
       })
       .then(function(ddoc) {
         expect(ddoc.views.mytest.map).to.be.a('string');
+        return userTestDB.get('_security');
+      })
+      .then(function(secDoc) {
+        expect(secDoc.admins.roles[0]).to.equal('admin_role');
+        expect(secDoc.members.roles[0]).to.equal('member_role');
         done();
       });
   });

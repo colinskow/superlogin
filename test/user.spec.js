@@ -123,7 +123,10 @@ describe('User Model', function() {
       return seed(userDB, userDesign).then(function(){
         done();
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   var verifyEmailToken;
@@ -166,6 +169,9 @@ describe('User Model', function() {
       })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -184,6 +190,9 @@ describe('User Model', function() {
         expect(secDoc.admins.roles[0]).to.equal('admin_role');
         expect(secDoc.members.roles[0]).to.equal('member_role');
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -199,6 +208,9 @@ describe('User Model', function() {
       .then(function(result) {
         console.log('Password authenticated');
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -211,9 +223,13 @@ describe('User Model', function() {
         throw new Error('Validation errors should have been generated');
       })
       .catch(function(err) {
-        expect(err.validationErrors.email[0]).to.equal('Email already in use');
-        expect(err.validationErrors.username[0]).to.equal('Username already in use');
-        done();
+        if(err.validationErrors) {
+          expect(err.validationErrors.email[0]).to.equal('Email already in use');
+          expect(err.validationErrors.username[0]).to.equal('Username already in use');
+          done();
+        } else {
+          done(err);
+        }
       });
   });
 
@@ -246,6 +262,9 @@ describe('User Model', function() {
         return emitterPromise;
       }).then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -258,6 +277,9 @@ describe('User Model', function() {
       .then(function(secDoc) {
         expect(secDoc.members.names.length).to.equal(1);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -280,6 +302,9 @@ describe('User Model', function() {
       })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -311,6 +336,9 @@ describe('User Model', function() {
       })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -322,6 +350,9 @@ describe('User Model', function() {
       .then(function(secDoc) {
         expect(secDoc.members.names.length).to.equal(0);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -373,6 +404,9 @@ describe('User Model', function() {
       })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -398,6 +432,9 @@ describe('User Model', function() {
       })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -426,6 +463,9 @@ describe('User Model', function() {
         return emitterPromise;
       }).then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -461,6 +501,9 @@ describe('User Model', function() {
         return emitterPromise;
       }).then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -492,6 +535,9 @@ describe('User Model', function() {
         return emitterPromise;
       }).then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -517,6 +563,9 @@ describe('User Model', function() {
       })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -551,6 +600,9 @@ describe('User Model', function() {
         return emitterPromise;
       }).then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -571,6 +623,9 @@ describe('User Model', function() {
       .then(function(result) {
         expect(result.facebook.auth.token).to.equal('y');
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -590,6 +645,9 @@ describe('User Model', function() {
       }, function(err) {
         expect(err.status).to.equal(409);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -616,6 +674,9 @@ describe('User Model', function() {
       .then(function(result) {
         expect(result._id).to.equal('misterx3');
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -638,6 +699,9 @@ describe('User Model', function() {
         // Test that the activity list is limited to the maximum value
         expect(theUser.activity.length).to.equal(3);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -652,6 +716,9 @@ describe('User Model', function() {
         expect(theUser.providers.length).to.equal(1);
         expect(theUser.providers.indexOf('facebook')).to.equal(-1);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -680,6 +747,9 @@ describe('User Model', function() {
         expect(Object.keys(finalDoc.session).length).to.equal(1);
         expect(finalDoc.session).to.include.keys('good1');
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -708,6 +778,9 @@ describe('User Model', function() {
         expect(Object.keys(finalDoc.session).length).to.equal(1);
         expect(finalDoc.session).to.include.keys('this1');
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -728,6 +801,9 @@ describe('User Model', function() {
       .then(function(result) {
         expect(result).to.equal(true);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -747,6 +823,9 @@ describe('User Model', function() {
       .then(function(result) {
         expect(result).to.equal(false);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -772,6 +851,9 @@ describe('User Model', function() {
       .then(function(result) {
         expect(result).to.equal(false);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -789,6 +871,9 @@ describe('User Model', function() {
         expect(newUser.unverifiedEmail.email).to.equal(emailUserForm.email);
         expect(newUser._id).to.equal(emailUserForm.email);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -800,8 +885,12 @@ describe('User Model', function() {
       .then(function(newUser) {
         throw "Should not have created the user!";
       }, function(err) {
-        expect(err.error).to.equal('Validation failed');
-        done();
+        if(err.error) {
+          expect(err.error).to.equal('Validation failed');
+          done();
+        } else {
+          done(err);
+        }
       });
   });
 
@@ -818,7 +907,7 @@ describe('User Model', function() {
         done();
       })
       .catch(function(err) {
-        console.log(err);
+        done(err);
       });
   });
 

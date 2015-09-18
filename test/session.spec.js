@@ -47,6 +47,9 @@ function runTest(config, adapter) {
             console.log('stored token');
             expect(result.key).to.equal(testToken.key);
             done();
+          })
+          .catch(function(err) {
+            done(err);
           });
       });
 
@@ -57,6 +60,9 @@ function runTest(config, adapter) {
               console.log('confirmed token');
               expect(result._id).to.equal('colinskow');
               done();
+            })
+            .catch(function(err) {
+              done(err);
             });
         });
       });

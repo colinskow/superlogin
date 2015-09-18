@@ -63,7 +63,10 @@ describe('SuperLogin', function() {
             done();
           });
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should verify the email', function(done) {
@@ -85,7 +88,10 @@ describe('SuperLogin', function() {
               });
           });
         });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should login the user', function(done) {
@@ -106,7 +112,10 @@ describe('SuperLogin', function() {
             done();
           });
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should access a protected endpoint', function(done) {
@@ -122,7 +131,10 @@ describe('SuperLogin', function() {
             done();
           });
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should require a role', function(done) {
@@ -138,7 +150,10 @@ describe('SuperLogin', function() {
             done();
           });
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should deny access when a required role is not present', function(done) {
@@ -154,7 +169,10 @@ describe('SuperLogin', function() {
             done();
           });
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should generate a forgot password token', function(done) {
@@ -170,7 +188,10 @@ describe('SuperLogin', function() {
             done();
           });
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should reset the password', function(done) {
@@ -193,7 +214,10 @@ describe('SuperLogin', function() {
               });
           });
         });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should logout the user upon password reset', function(done) {
@@ -209,7 +233,10 @@ describe('SuperLogin', function() {
             done();
           });
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should login with the new password', function(done) {
@@ -236,7 +263,10 @@ describe('SuperLogin', function() {
             done();
           });
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should refresh the session', function(done) {
@@ -253,7 +283,10 @@ describe('SuperLogin', function() {
             done();
           });
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should change the password', function(done) {
@@ -276,7 +309,10 @@ describe('SuperLogin', function() {
               });
           });
         });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should logout the user', function(done) {
@@ -307,7 +343,10 @@ describe('SuperLogin', function() {
               });
           });
         });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should login after creating a new user', function(done) {
@@ -327,7 +366,10 @@ describe('SuperLogin', function() {
             done();
           });
       });
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should validate a username', function(done) {
@@ -354,6 +396,9 @@ describe('SuperLogin', function() {
               done();
             });
         });
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -381,6 +426,9 @@ describe('SuperLogin', function() {
               done();
             });
         });
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -419,6 +467,9 @@ describe('SuperLogin', function() {
         expect(result.message.search('Your account is currently locked')).to.equal(0);
         done();
         return BPromise.resolve();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -431,6 +482,9 @@ describe('SuperLogin', function() {
         console.log('DBs Destroyed');
         app.shutdown();
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 

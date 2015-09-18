@@ -57,6 +57,9 @@ describe('DBAuth', function() {
       })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -77,6 +80,9 @@ describe('DBAuth', function() {
       .then(function(doc) {
         expect(doc.expires).to.equal(key.expires);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -91,8 +97,12 @@ describe('DBAuth', function() {
       .then(function() {
         throw new Error('Failed to delete testkey');
       }, function(err) {
-        expect(err.reason).to.equal('deleted');
-        done();
+        if(err.reason) {
+          expect(err.reason).to.equal('deleted');
+          done();
+        } else {
+          done(err);
+        }
       });
   });
 
@@ -108,6 +118,9 @@ describe('DBAuth', function() {
         expect(secDoc.members.names[0]).to.equal('key1');
         expect(secDoc.members.names[1]).to.equal('key2');
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
 
   });
@@ -123,6 +136,9 @@ describe('DBAuth', function() {
       .then(function(secDoc) {
         expect(secDoc.members.names.length).to.equal(2);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -137,6 +153,9 @@ describe('DBAuth', function() {
       .then(function(secDoc) {
         expect(secDoc.members.names.length).to.equal(0);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -169,6 +188,9 @@ describe('DBAuth', function() {
       })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -271,6 +293,9 @@ describe('DBAuth', function() {
       })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -281,6 +306,9 @@ describe('DBAuth', function() {
       })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 

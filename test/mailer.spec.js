@@ -48,6 +48,9 @@ describe('Mailer', function() {
         expect(response.search('Hi Super,')).to.be.greaterThan(-1);
         expect(response.search('https://example.com/auth/confirm-email/abc123')).to.be.greaterThan(-1);
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 

@@ -26,7 +26,10 @@ describe('Cloudant', function() {
       return testDB;
     }).then(function() {
       done();
-    });
+    })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('should generate an API key', function(done) {
@@ -40,6 +43,9 @@ describe('Cloudant', function() {
         expect(result.key).to.be.a('string');
         apiKey = result.key;
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -56,6 +62,9 @@ describe('Cloudant', function() {
         expect(secDoc.cloudant.abc123[0]).to.equal('user:test_user');
         expect(secDoc.cloudant.abc123[1]).to.equal('_reader');
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -72,6 +81,9 @@ describe('Cloudant', function() {
         expect(secDoc.cloudant.abc123).to.be.an('undefined');
         expect(secDoc.cloudant.def456[1]).to.equal('_reader');
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 
@@ -83,6 +95,9 @@ describe('Cloudant', function() {
     })
       .then(function() {
         done();
+      })
+      .catch(function(err) {
+        done(err);
       });
   });
 

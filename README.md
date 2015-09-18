@@ -477,3 +477,6 @@ The intense power of SuperLogin is unleashed on a world that may not be ready! T
 
 ##### Client Access Token Strategies (0.2.0) 2015-09-13
 Added client `access_token` strategies to support OAuth2 flows from Cordova, PhoneGap, and native apps.
+
+##### Security Roles For CouchDB (0.3.0) 2015-09-18
+Created configuration options to setup _security roles when user databases are created. Improved tests and updated PouchDB.

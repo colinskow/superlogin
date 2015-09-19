@@ -18,9 +18,9 @@ For issues and feature requests visit the [issue tracker](https://github.com/col
 - [Quick Start](#quick-start)
 - [Securing Your Routes](#securing-your-routes)
 - [Database Security](#database-security)
+- [CouchDB Document Update Validation](#couchdb-document-update-validation)
 - [Adding Providers](#adding-providers)
 - [Advanced Configuration](#advanced-configuration)
-- [CouchDB Document Update Validation](#couchdb-document-update-validation)
 - [Routes](#routes)
 - [Event Emitter](#event-emitter)
 - [Main API](#main-api)
@@ -182,6 +182,12 @@ If, however, you are using regular CouchDB, then Admin Party is default and all 
 
 SuperLogin also allows you to specify default `_security` roles for members and admins in the `userDBs` section of your config file. See [`config.example.js`](https://github.com/colinskow/superlogin/blob/master/config.example.js) for details.
 
+## CouchDB Document Update Validation
+
+CouchDB can save your API a lot of traffic by handling both reads and writes. CouchDB provides the [validate_doc_update function](http://guide.couchdb.org/draft/validation.html) to approve or disapprove what gets written. However, since your CouchDB users are temporary random API keys, you have no idea which user is requesting to write. SuperLogin has inserted the original `user_id` into `userCtx.roles[0]`, prefixed by `user:` (e.g. `user:superman`).
+
+If you are using Cloudant authentication, the prefixed `user_id` is inserted as the first item on the `permissions` array, which will also appear inside `roles` in your `userCtx` object. You will also find all the `roles` from your user doc here.
+
 ## Adding Providers
 
 You can add support for any Passport OAuth2 strategy to SuperLogin with just a few lines of code. (OAuth1 strategies generally require a cookie-based session to work, so are not currently supported by SuperLogin which is sessionless.)
@@ -240,12 +246,6 @@ Note that this uses the exact settings in your config as the popup window workfl
 Take a look at [`config.example.js`](https://github.com/colinskow/superlogin/blob/master/config.example.js) for a complete tour of all available configuration options. You'll find a lot of cool hidden features there that aren't documented here.
 
 `/config/default.config.js` contains a list of default settings that will be assumed if you don't specify anything.
-
-## CouchDB Document Update Validation
-
-CouchDB can save your API a lot of traffic by handling both reads and writes. CouchDB provides the [validate_doc_update function](http://guide.couchdb.org/draft/validation.html) to approve or disapprove what gets written. However, since your CouchDB users are temporary random API keys, you have no idea which user is requesting to write. SuperLogin has inserted the original `user_id` into `userCtx.roles[0]`, prefixed by `user:` (e.g. `user:superman`).
-
-If you are using Cloudant authentication, the prefixed `user_id` is inserted as the first item on the `permissions` array, which will also appear inside `roles` in your `userCtx` object. You will also find all the `roles` from your user doc here.
 
 ## Routes
 

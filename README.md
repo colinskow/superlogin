@@ -188,6 +188,8 @@ CouchDB can save your API a lot of traffic by handling both reads and writes. Co
 
 If you are using Cloudant authentication, the prefixed `user_id` is inserted as the first item on the `permissions` array, which will also appear inside `roles` in your `userCtx` object. You will also find all the `roles` from your user doc here.
 
+If you wish to give a user special Cloudant permissions other than the ones specified in your config, you can edit the user doc from the `sl-users` database and under `personalDBs` add an array called `permissions` under the corresponding DB for that user.
+
 ## Adding Providers
 
 You can add support for any Passport OAuth2 strategy to SuperLogin with just a few lines of code. (OAuth1 strategies generally require a cookie-based session to work, so are not currently supported by SuperLogin which is sessionless.)

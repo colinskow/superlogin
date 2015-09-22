@@ -482,3 +482,6 @@ Added client `access_token` strategies to support OAuth2 flows from Cordova, Pho
 
 ##### Security Roles For CouchDB (0.3.0) 2015-09-18
 Created configuration options to setup _security roles when user databases are created. Improved tests and updated PouchDB.
+
+##### Security Roles For CouchDB (0.4.0) 2015-09-21
+Default per-DB Cloudant permissions no longer save in the user doc. You can set custom permissions in the user doc, otherwise it will use the settings in your config. Misc bug fixes.

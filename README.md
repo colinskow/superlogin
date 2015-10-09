@@ -444,8 +444,8 @@ Deauthorizes the specified database from the user's account, and optionally dest
 * `deletePrivate`: when `true`, will destroy a db if it is marked as private
 * `deleteShared`: when `true`, will destroy a db if it is marked as shared. Caution: may destroy other users' data!
 
-##### `superlogin.logoutUser(user_id)`
-Logs out all of a user's sessions at once.
+##### `superlogin.logoutUser(user_id, session_id)`
+Logs out all of a user's sessions at once. If `user_id` is not specified SuperLogin will look it up from the `session_id`.
 
 ##### `superlogin.logoutSession(session_id)`
 Logs out the specified session.
@@ -485,3 +485,6 @@ Created configuration options to setup _security roles when user databases are c
 
 ##### Security Roles For CouchDB (0.4.0) 2015-09-21
 Default per-DB Cloudant permissions no longer save in the user doc. You can set custom permissions in the user doc, otherwise it will use the settings in your config. Misc bug fixes.
+
+##### Enable Logout of Expired Sessions (0.5.0) 2015-10-08
+Previously a user could only logout if the session token was still valid. API keys would be expired, but database credentials could still be used. Now logout will ensure the user is completely logged out, even if the session is already expired. Also fixed a bug that was causing `sessionLife` and `tokenLife` settings not to work.

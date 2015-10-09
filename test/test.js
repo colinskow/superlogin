@@ -244,12 +244,10 @@ describe('SuperLogin', function() {
       return new BPromise(function(resolve, reject) {
         request
           .post(server + '/auth/login')
-          // .auth(newUser.username, 'newpass')
           .send({ username: newUser.username, password: 'newpass' })
           .end(function(error, res) {
             if(error) {
-              done();
-              throw new Error('Failed to log in.');
+              done(new Error('Failed to log in.'));
             }
             accessToken = res.body.token;
             accessPass = res.body.password;
@@ -324,7 +322,7 @@ describe('SuperLogin', function() {
             .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
             .end(function(error, res) {
               if(error || res.status !== 200) {
-                throw new Error('Failed to change the password.');
+                throw new Error('Failed to logout the user.');
               }
               expect(res.status).to.equal(200);
               resolve();

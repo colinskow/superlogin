@@ -15,8 +15,8 @@ var expect = require('chai').expect;
 var emitter = new events.EventEmitter();
 
 PouchDB.setMaxListeners(20);
-var userDB = new PouchDB('http://localhost:5984/cane_test_users');
-var keysDB = new PouchDB('http://localhost:5984/cane_test_keys');
+var userDB = new PouchDB('http://localhost:5984/superlogin_test_users');
+var keysDB = new PouchDB('http://localhost:5984/superlogin_test_keys');
 
 var testUserForm = {
   name: 'Super',
@@ -379,12 +379,12 @@ describe('User Model', function() {
       .then(function(session2) {
         sessions[1] = session2.token;
         passes[1] = session2.password;
-        return user.logoutUser(testUserForm.username);
+        return user.logoutUser(null, sessions[0]);
       })
       .then(function() {
         return BPromise.all([
           user.confirmSession(sessions[0], passes[0]),
-          user.confirmSession(sessions[1], passes[0])
+          user.confirmSession(sessions[1], passes[1])
         ]);
       })
       .then(function(results) {

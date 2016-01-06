@@ -63,7 +63,7 @@ module.exports = {
     // 'redis' or 'memory'
     adapter: 'redis',
     redis: {
-      // If url is supplied port and url will be ignored
+      // If url is supplied, port and host will be ignored
       url: 'redis://user:pass@host:port',
       port: 6379,
       host: 'localhost',

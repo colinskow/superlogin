@@ -20,21 +20,24 @@ describe('Cloudant', function() {
     })
   }); */
 
-  it('should create the test DB', function(done) {
-    previous.then(function() {
+  before(function() {
+    return previous.then(function() {
       testDB = new PouchDB(cloudantUrl + '/temp_test');
       return testDB;
-    }).then(function() {
-      done();
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should generate an API key', function(done) {
+  after(function() {
     this.timeout(5000);
-    previous
+    return previous.finally(function() {
+      // return testDB.destroy();
+      return BPromise.resolve();
+    });
+  });
+
+  it('should generate an API key', function() {
+    this.timeout(5000);
+    return previous
       .then(function() {
         return cloudant.getAPIKey(testDB);
       })
@@ -42,16 +45,12 @@ describe('Cloudant', function() {
         expect(result.ok).to.equal(true);
         expect(result.key).to.be.a('string');
         apiKey = result.key;
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
-  it('should authorize keys', function(done) {
+  it('should authorize keys', function() {
     this.timeout(10000);
-    previous
+    return previous
       .then(function() {
         return cloudant.authorizeKeys('test_user', testDB, ['abc123', 'def456']);
       })
@@ -61,16 +60,12 @@ describe('Cloudant', function() {
       .then(function(secDoc) {
         expect(secDoc.cloudant.abc123[0]).to.equal('user:test_user');
         expect(secDoc.cloudant.abc123[1]).to.equal('_reader');
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
-  it('should deauthorize a key', function(done) {
+  it('should deauthorize a key', function() {
     this.timeout(10000);
-    previous
+    return previous
       .then(function() {
         return cloudant.deauthorizeKeys(testDB, 'abc123');
       })
@@ -80,24 +75,6 @@ describe('Cloudant', function() {
       .then(function(secDoc) {
         expect(secDoc.cloudant.abc123).to.be.an('undefined');
         expect(secDoc.cloudant.def456[1]).to.equal('_reader');
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
-  });
-
-  it('should clean up the test db', function(done) {
-    this.timeout(5000);
-    previous.finally(function() {
-      // return testDB.destroy();
-      return BPromise.resolve();
-    })
-      .then(function() {
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 

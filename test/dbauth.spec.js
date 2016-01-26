@@ -6,10 +6,14 @@ var request = require('superagent');
 var expect = require('chai').expect;
 var DBAuth = require('../lib/dbauth');
 var Configure = require('../lib/configure');
+var helper = require('./helper.js');
+var config = require('./test.config.js');
 
-var userDB = new PouchDB('http://localhost:5984/cane_test_users');
-var keysDB = new PouchDB('http://localhost:5984/cane_test_keys');
-var testDB =  new PouchDB('http://localhost:5984/cane_test_test');
+var dbUrl = helper.getDBUrl(config.dbServer);
+
+var userDB = new PouchDB(dbUrl + "/cane_test_users");
+var keysDB = new PouchDB(dbUrl + "/cane_test_keys");
+var testDB =  new PouchDB(dbUrl + "/cane_test_test");
 
 var userDesign = require('../designDocs/user-design');
 
@@ -23,10 +27,10 @@ var userConfig = new Configure({
   confirmEmail: true,
   emailFrom: 'noreply@example.com',
   dbServer: {
-    protocol: 'http://',
-    host: 'localhost:5984',
-    user: '',
-    password: ''
+    protocol: config.dbServer.protocol,
+    host: config.dbServer.host,
+    user: config.dbServer.user,
+    password: config.dbServer.password
   },
   userDBs: {
     privatePrefix: 'test',
@@ -40,9 +44,9 @@ describe('DBAuth', function() {
 
   var key, previous;
 
-  it('should create a database', function(done) {
+  it('should create a database', function() {
     var testDBName = 'sl_test_create_db';
-    checkDBExists(testDBName)
+    return checkDBExists(testDBName)
       .then(function(result) {
         expect(result).to.equal(false);
         return dbAuth.createDB(testDBName);
@@ -52,20 +56,14 @@ describe('DBAuth', function() {
       })
       .then(function(result) {
         expect(result).to.equal(true);
-        var destroyDB = new PouchDB('http://localhost:5984/' + testDBName);
+        var destroyDB = new PouchDB(dbUrl + '/' + testDBName);
         return destroyDB.destroy();
-      })
-      .then(function() {
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
-  it('should generate a database access key', function(done) {
+  it('should generate a database access key', function() {
     previous = BPromise.resolve();
-    previous
+    return previous
       .then(function() {
         return seed(userDB, userDesign);
       })
@@ -79,15 +77,11 @@ describe('DBAuth', function() {
       })
       .then(function(doc) {
         expect(doc.expires).to.equal(key.expires);
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
-  it('should remove a database access key', function(done) {
-    previous
+  it('should remove a database access key', function() {
+    return previous
       .then(function() {
         return dbAuth.removeKeys('testkey');
       })
@@ -96,18 +90,14 @@ describe('DBAuth', function() {
       })
       .then(function() {
         throw new Error('Failed to delete testkey');
-      }, function(err) {
-        if(err.reason) {
-          expect(err.reason).to.equal('deleted');
-          done();
-        } else {
-          done(err);
-        }
+      }).catch(function(err) {
+        if (err.reason && err.reason == 'deleted') return;
+        throw err;
       });
   });
 
-  it('should authorize database keys', function(done) {
-    previous
+  it('should authorize database keys', function() {
+    return previous
       .then(function() {
         return dbAuth.authorizeKeys('testuser', testDB, ['key1', 'key2']);
       })
@@ -117,16 +107,11 @@ describe('DBAuth', function() {
       .then(function(secDoc) {
         expect(secDoc.members.names[0]).to.equal('key1');
         expect(secDoc.members.names[1]).to.equal('key2');
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
-
   });
 
-  it('should only authorize keys once', function(done) {
-    previous
+  it('should only authorize keys once', function() {
+    return previous
       .then(function() {
         return dbAuth.authorizeKeys('testuser', testDB, ['key1', 'key2']);
       })
@@ -135,15 +120,11 @@ describe('DBAuth', function() {
       })
       .then(function(secDoc) {
         expect(secDoc.members.names.length).to.equal(2);
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
-  it('should deauthorize keys', function(done) {
-    previous
+  it('should deauthorize keys', function() {
+    return previous
       .then(function() {
         return dbAuth.deauthorizeKeys(testDB, ['key1', 'key2']);
       })
@@ -152,14 +133,10 @@ describe('DBAuth', function() {
       })
       .then(function(secDoc) {
         expect(secDoc.members.names.length).to.equal(0);
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
-  it('should create a new user database', function(done) {
+  it('should create a new user database', function() {
     var userDoc = {
       _id: 'TEST.user-31@cool.com',
       session: {
@@ -168,13 +145,13 @@ describe('DBAuth', function() {
       }
     };
     var newDB;
-    previous
+    return previous
       .then(function() {
         return dbAuth.addUserDB(userDoc, 'personal', ['test'], 'private', [], ['admin_role'], ['member_role']);
       })
       .then(function(finalDBName) {
         expect(finalDBName).to.equal('test_personal$test(2e)user(2d)31(40)cool(2e)com');
-        newDB = new PouchDB('http://localhost:5984/' + finalDBName);
+        newDB = new PouchDB(dbUrl + '/' + finalDBName);
         return newDB.get('_security');
       }).then(function(secDoc) {
         expect(secDoc.admins.roles[0]).to.equal('admin_role');
@@ -185,16 +162,10 @@ describe('DBAuth', function() {
       .then(function(design){
         expect(design.views.mytest.map).to.be.a('string');
         return newDB.destroy();
-      })
-      .then(function() {
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
-  it('should delete all expired keys', function(done) {
+  it('should delete all expired keys', function() {
     var now = Date.now();
     var db1, db2;
     var user1 = {
@@ -208,6 +179,7 @@ describe('DBAuth', function() {
         name: 'expiretest'
       }}
     };
+
     var user2 = {
       _id: 'testuser2',
       session: {
@@ -219,7 +191,8 @@ describe('DBAuth', function() {
         name: 'expiretest'
       }}
     };
-    previous
+
+    return previous
       .then(function() {
         var promises = [];
         // Save the users
@@ -252,8 +225,8 @@ describe('DBAuth', function() {
       })
       .then(function() {
         // Fetch the user docs to inspect them
-        db1 = new PouchDB('http://localhost:5984/test_expiretest$testuser1');
-        db2 = new PouchDB('http://localhost:5984/test_expiretest$testuser2');
+        db1 = new PouchDB(dbUrl + "/test_expiretest$testuser1");
+        db2 = new PouchDB(dbUrl + "/test_expiretest$testuser2");
         var promises = [];
         promises.push(userDB.get('testuser1'));
         promises.push(userDB.get('testuser2'));
@@ -290,32 +263,20 @@ describe('DBAuth', function() {
         /* jshint +W030 */
         // Finally clean up
         return BPromise.all([db1.destroy(), db2.destroy()]);
-      })
-      .then(function() {
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
-  it('should cleanup databases', function(done) {
-    previous
+  it('should cleanup databases', function() {
+    return previous
       .finally(function() {
         return BPromise.all([userDB.destroy(), keysDB.destroy(), testDB.destroy()]);
-      })
-      .then(function() {
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
 });
 
 function checkDBExists(dbname) {
-  var finalUrl = 'http://localhost:5984/' + dbname;
+  var finalUrl = dbUrl + '/' + dbname;
   return BPromise.fromNode(function(callback) {
     request.get(finalUrl)
       .end(callback);

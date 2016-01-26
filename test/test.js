@@ -5,6 +5,7 @@ var BPromise = require('bluebird');
 global.Promise = BPromise;
 var PouchDB = require('pouchdb');
 var seed = require('pouchdb-seed-design');
+var helper = require('./helper.js');
 
 describe('SuperLogin', function() {
 
@@ -16,9 +17,10 @@ describe('SuperLogin', function() {
   var accessPass;
   var expireCompare;
 
-  var server = 'http://localhost:4000';
 
   var config = require('./test.config');
+  var server = 'http://localhost:5000';
+  var dbUrl = helper.getDBUrl(config.dbServer);
 
   var newUser = {
     name: 'Kewl Uzer',
@@ -37,8 +39,8 @@ describe('SuperLogin', function() {
   };
 
   before(function(done) {
-    userDB = new PouchDB('http://localhost:5984/sl_test-users');
-    keysDB = new PouchDB('http://localhost:5984/sl_test-keys');
+    userDB = new PouchDB(dbUrl + "/sl_test-users");
+    keysDB = new PouchDB(dbUrl + "/sl_test-keys");
     app = require('./test-server')(config);
     app.superlogin.onCreate(function(userDoc, provider) {
       userDoc.profile = {name: userDoc.name};

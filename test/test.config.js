@@ -1,13 +1,14 @@
 module.exports = {
+  port: 5000,
   testMode: {
     noEmail: true,
     oauthDebug: true
   },
   dbServer: {
     protocol: 'http://',
-    host: 'localhost:5984',
-    user: '',
-    password: '',
+    host: '192.168.99.100:5984',
+    user: 'admin',
+    password: 'admin',
     userDB: 'sl_test-users',
     couchAuthDB: 'sl_test-keys'
   },

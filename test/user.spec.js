@@ -11,12 +11,15 @@ var util = require('../lib/util');
 var seed = require('pouchdb-seed-design');
 var request = require('superagent');
 var expect = require('chai').expect;
+var helper = require('./helper.js');
+var config = require('./test.config.js');
+var dbUrl = helper.getDBUrl(config.dbServer);
 
 var emitter = new events.EventEmitter();
 
 PouchDB.setMaxListeners(20);
-var userDB = new PouchDB('http://localhost:5984/superlogin_test_users');
-var keysDB = new PouchDB('http://localhost:5984/superlogin_test_keys');
+var userDB = new PouchDB(dbUrl + "/superlogin_test_users");
+var keysDB = new PouchDB(dbUrl + "/superlogin_test_keys");
 
 var testUserForm = {
   name: 'Super',
@@ -61,10 +64,10 @@ var userConfig = new Configure({
     }
   },
   dbServer: {
-    protocol: 'http://',
-    host: 'localhost:5984',
-    user: '',
-    password: ''
+    protocol: config.dbServer.protocol,
+    host: config.dbServer.host,
+    user: config.dbServer.user,
+    password: config.dbServer.password
   },
   session: {
     adapter: 'memory'
@@ -90,7 +93,7 @@ var userConfig = new Configure({
     facebook: {
       clientID: 'FAKE_ID',
       clientSecret: 'FAKE_SECRET',
-      callbackURL: 'http://localhost:4000/auth/facebook/callback'
+      callbackURL: 'http://localhost:5000/auth/facebook/callback'
     }
   },
   userModel: {
@@ -177,7 +180,7 @@ describe('User Model', function() {
 
   it('should have created a user db with design doc and _security', function(done) {
     console.log('Checking user db and design doc');
-    userTestDB = new PouchDB('http://localhost:5984/test_usertest$superuser');
+    userTestDB = new PouchDB(dbUrl + '/test_usertest$superuser');
     previous
       .then(function() {
         return userTestDB.get('_design/test');
@@ -253,7 +256,7 @@ describe('User Model', function() {
         sessionPass = result.password;
         firstExpires = result.expires;
         expect(sessionKey).to.be.a('string');
-        expect(result.userDBs.usertest).to.equal('http://' + result.token + ':' + result.password + '@localhost:5984/test_usertest$superuser');
+        expect(result.userDBs.usertest).to.equal('http://' + result.token + ':' + result.password + '@' + config.dbServer.host + '/test_usertest$superuser');
         return(userDB.get(testUserForm.username));
       })
       .then(function(user) {
@@ -897,10 +900,10 @@ describe('User Model', function() {
   it('should destroy all the test databases', function(done) {
     previous.finally(function() {
       console.log('Destroying database');
-      var userTestDB1 = new PouchDB('http://localhost:5984/test_usertest$superuser');
-      var userTestDB2 = new PouchDB('http://localhost:5984/test_usertest$misterx');
-      var userTestDB3 = new PouchDB('http://localhost:5984/test_usertest$misterx3');
-      var userTestDB4 = new PouchDB('http://localhost:5984/test_superdb');
+      var userTestDB1 = new PouchDB(dbUrl + "/test_usertest$superuser");
+      var userTestDB2 = new PouchDB(dbUrl + "/test_usertest$misterx");
+      var userTestDB3 = new PouchDB(dbUrl + "/test_usertest$misterx3");
+      var userTestDB4 = new PouchDB(dbUrl + "/test_superdb");
       return BPromise.all([userDB.destroy(), keysDB.destroy(), userTestDB1.destroy(), userTestDB2.destroy(), userTestDB3.destroy(), userTestDB4.destroy()]);
     })
       .then(function() {
@@ -912,7 +915,7 @@ describe('User Model', function() {
   });
 
   function checkDBExists(dbname) {
-    var finalUrl = 'http://localhost:5984/' + dbname;
+    var finalUrl = dbUrl + '/' + dbname;
     return BPromise.fromNode(function(callback) {
       request.get(finalUrl)
         .end(callback);

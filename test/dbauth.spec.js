@@ -6,10 +6,14 @@ var request = require('superagent');
 var expect = require('chai').expect;
 var DBAuth = require('../lib/dbauth');
 var Configure = require('../lib/configure');
+var helper = require('./helper.js');
+var config = require('./test.config.js');
 
-var userDB = new PouchDB('http://localhost:5984/cane_test_users');
-var keysDB = new PouchDB('http://localhost:5984/cane_test_keys');
-var testDB =  new PouchDB('http://localhost:5984/cane_test_test');
+var dbUrl = helper.getDBUrl(config.dbServer);
+
+var userDB = new PouchDB(dbUrl + "/cane_test_users");
+var keysDB = new PouchDB(dbUrl + "/cane_test_keys");
+var testDB =  new PouchDB(dbUrl + "/cane_test_test");
 
 var userDesign = require('../designDocs/user-design');
 
@@ -23,10 +27,10 @@ var userConfig = new Configure({
   confirmEmail: true,
   emailFrom: 'noreply@example.com',
   dbServer: {
-    protocol: 'http://',
-    host: 'localhost:5984',
-    user: '',
-    password: ''
+    protocol: config.dbServer.protocol,
+    host: config.dbServer.host,
+    user: config.dbServer.user,
+    password: config.dbServer.password
   },
   userDBs: {
     privatePrefix: 'test',
@@ -52,7 +56,7 @@ describe('DBAuth', function() {
       })
       .then(function(result) {
         expect(result).to.equal(true);
-        var destroyDB = new PouchDB('http://localhost:5984/' + testDBName);
+        var destroyDB = new PouchDB(dbUrl + '/' + testDBName);
         return destroyDB.destroy();
       })
       .then(function() {
@@ -174,7 +178,7 @@ describe('DBAuth', function() {
       })
       .then(function(finalDBName) {
         expect(finalDBName).to.equal('test_personal$test(2e)user(40)cool(2e)com');
-        newDB = new PouchDB('http://localhost:5984/' + finalDBName);
+        newDB = new PouchDB(dbUrl + '/' + finalDBName);
         return newDB.get('_security');
       }).then(function(secDoc) {
         expect(secDoc.admins.roles[0]).to.equal('admin_role');
@@ -252,8 +256,8 @@ describe('DBAuth', function() {
       })
       .then(function() {
         // Fetch the user docs to inspect them
-        db1 = new PouchDB('http://localhost:5984/test_expiretest$testuser1');
-        db2 = new PouchDB('http://localhost:5984/test_expiretest$testuser2');
+        db1 = new PouchDB(dbUrl + "/test_expiretest$testuser1");
+        db2 = new PouchDB(dbUrl + "/test_expiretest$testuser2");
         var promises = [];
         promises.push(userDB.get('testuser1'));
         promises.push(userDB.get('testuser2'));
@@ -315,7 +319,7 @@ describe('DBAuth', function() {
 });
 
 function checkDBExists(dbname) {
-  var finalUrl = 'http://localhost:5984/' + dbname;
+  var finalUrl = dbUrl + '/' + dbname;
   return BPromise.fromNode(function(callback) {
     request.get(finalUrl)
       .end(callback);

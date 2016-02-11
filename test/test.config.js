@@ -7,8 +7,8 @@ module.exports = {
   dbServer: {
     protocol: process.env.COUCH_PROTOCOL || 'http://',
     host:     process.env.COUCH_HOST     || 'localhost:5984',
-    user:     process.env.COUCH_USER     || 'admin',
-    password: process.env.COUCH_PASS     || 'admin',
+    user:     process.env.COUCH_USER     || '',
+    password: process.env.COUCH_PASS     || '',
     userDB:      'sl_test-users',
     couchAuthDB: 'sl_test-keys'
   },

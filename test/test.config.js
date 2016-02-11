@@ -1,15 +1,15 @@
 module.exports = {
-  port: 4000,
+  port: 5000,
   testMode: {
     noEmail: true,
     oauthDebug: true
   },
   dbServer: {
-    protocol: 'http://',
-    host: 'localhost:5984',
-    user: 'admin',
-    password: 'admin',
-    userDB: 'sl_test-users',
+    protocol: process.env.COUCH_PROTOCOL || 'http://',
+    host:     process.env.COUCH_HOST     || 'localhost:5984',
+    user:     process.env.COUCH_USER     || 'admin',
+    password: process.env.COUCH_PASS     || 'admin',
+    userDB:      'sl_test-users',
     couchAuthDB: 'sl_test-keys'
   },
   security: {

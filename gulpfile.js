@@ -35,9 +35,9 @@ gulp.task('user-test', ['dbauth-test'], function () {
     .pipe(mocha({timeout: 2000}));
 });
 
-gulp.task('superlogin-test', ['user-test'], function () {
+gulp.task('final-test', ['user-test'], function () {
   return gulp.src(['test/superlogin.spec.js'], {read: false})
     .pipe(mocha({timeout: 2000}));
 });
 
-gulp.task('default', ['superlogin-test', 'user-test', 'mailer-test', 'session-test', 'middleware-test', 'lint']);
+gulp.task('default', ['final-test', 'user-test', 'mailer-test', 'session-test', 'middleware-test', 'lint']);

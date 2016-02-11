@@ -1,12 +1,12 @@
 module.exports = {
-  port: 5000,
+  port: 4000,
   testMode: {
     noEmail: true,
     oauthDebug: true
   },
   dbServer: {
     protocol: 'http://',
-    host: '192.168.99.100:5984',
+    host: 'localhost:5984',
     user: 'admin',
     password: 'admin',
     userDB: 'sl_test-users',

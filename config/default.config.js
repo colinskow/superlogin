@@ -7,7 +7,8 @@ module.exports = {
     maxFailedLogins: 4,
     lockoutTime: 300,
     sessionLife: 86400,
-    tokenLife: 86400
+    tokenLife: 86400,
+    loginOnRegistration: false
   },
   local: {
     usernameField: 'username',

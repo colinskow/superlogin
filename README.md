@@ -13,7 +13,7 @@ For issues and feature requests visit the [issue tracker](https://github.com/col
 ## Contents
 
 - [Features](#features)
-- [AngularJS Bindings and Demo](#angularjs-bindings-and-demo)
+- [AngularJS Tools and Demo](#angularjs-tools-and-demo)
 - [How It Works](#how-it-works)
 - [Quick Start](#quick-start)
 - [Securing Your Routes](#securing-your-routes)

@@ -7,8 +7,8 @@
     "type": "git",
     "url": "https://github.com/colinskow/superlogin.git"
   },
-  "engines" : {
-    "node" : ">=4.0.0"
+  "engines": {
+    "node": ">=4.0.0"
   },
   "scripts": {
     "test": "gulp"
@@ -33,32 +33,33 @@
   },
   "homepage": "https://github.com/colinskow/superlogin",
   "dependencies": {
-    "bluebird": "^2.9.14",
+    "bluebird": "^2.10.2",
     "couch-pwd": "0.0.1",
     "ejs": "^2.3.1",
     "express": "^4.13.3",
-    "extend": "^2.0.0",
+    "extend": "^3.0.0",
     "node-uuid": "^1.4.3",
-    "nodemailer": "^1.4.0",
-    "nodemailer-stub-transport": "^0.1.4",
-    "passport": "^0.2.2",
+    "nodemailer": "^2.3.0",
+    "nodemailer-stub-transport": "^1.0.0",
+    "passport": "^0.3.2",
     "passport-http-bearer-sl": "^1.0.1",
     "passport-local": "^1.0.0",
-    "pouchdb": "~4.0.3",
+    "pouchdb": "~5.3.1",
     "pouchdb-seed-design": "^0.2.0",
-    "redis": "^1.0.0",
+    "redis": "^2.5.2",
     "sofa-model": "^0.2.0",
     "superagent": "^1.2.0",
-    "urlsafe-base64": "0.0.2"
+    "urlsafe-base64": "1.0.0"
   },
   "devDependencies": {
     "body-parser": "^1.9.2",
-    "chai": "^1.9.1",
+    "chai": "^3.5.0",
     "gulp": "^3.8.6",
-    "gulp-jshint": "^1.7.1",
-    "gulp-mocha": "^0.5.1",
-    "jshint-stylish": "^0.4.0",
-    "mocha": "^1.20.1",
+    "gulp-jshint": "^2.0.0",
+    "gulp-mocha": "^2.2.0",
+    "jshint": "^2.9.1",
+    "jshint-stylish": "^2.1.0",
+    "mocha": "^2.4.5",
     "morgan": "^1.5.2"
   }
 }

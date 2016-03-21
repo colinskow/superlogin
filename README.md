@@ -254,7 +254,7 @@ Take a look at [`config.example.js`](https://github.com/colinskow/superlogin/blo
 ##### `POST /register`
 Creates a new account with a username and password. Required fields are: `username`, `email`, `password` and `confirmPassword`. `name` is optional. Any additional fields you want to include need to be white listed under `userModel` in your config. See [`config.example.js`](https://github.com/colinskow/superlogin/blob/master/config.example.js) for details.
 
-If `local.sendConfirmEmail` is true, a confirmation email will be sent with a verify link. If `local.requireEmailConfirm` is true, the user will not be able to login until the confirmation is complete. If `local.loginOnRegistration` is true a session will be automatically created and sent as the response.
+If `local.sendConfirmEmail` is true, a confirmation email will be sent with a verify link. If `local.requireEmailConfirm` is true, the user will not be able to login until the confirmation is complete. If `security.loginOnRegistration` is true a session will be automatically created and sent as the response.
 
 ##### `POST /login`
 Include `username` and `password` fields to authenticate and initiate a session. The field names can be customized in your config under `local.usernameField` and `local.passwordField`.

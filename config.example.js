@@ -26,7 +26,11 @@ module.exports = {
     // The amount of time a password reset token is valid for
     tokenLife: 86400,
     // The maximum number of entries in the activity log in each user doc. Zero to disable completely
-    userActivityLogSize: 10
+    userActivityLogSize: 10,
+    // If set to true, the user will be logged in automatically after registering
+    loginOnRegistration: false,
+    // If set to true, the user will be logged in automatically after resetting the password
+    loginOnPasswordReset: false
   },
   local: {
     // Send out a confirm email after each user signs up with local login
@@ -37,10 +41,6 @@ module.exports = {
     confirmEmailRedirectURL: '/',
     // Set this to true to disable usernames and use emails instead
     emailUsername: false,
-    // If set to true, the user will be logged in automatically after registering
-    loginOnRegistration: false,
-    // If set to true, the user will be logged in automatically after resetting the password
-    loginOnPasswordReset: false,
     // Custom names for the username and password fields in your sign-in form
     usernameField: 'user',
     passwordField: 'pass'

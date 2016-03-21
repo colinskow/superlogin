@@ -7,7 +7,11 @@ module.exports = {
     maxFailedLogins: 4,
     lockoutTime: 300,
     sessionLife: 86400,
-    tokenLife: 86400
+    tokenLife: 86400,
+    // if true, login user immediately after POST /register 
+    loginOnRegistration: true,
+    // if true, login user immediately after POST /password-reset 
+    loginOnPasswordReset: true
   },
   local: {
     usernameField: 'username',

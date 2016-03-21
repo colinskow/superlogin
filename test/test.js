@@ -5,6 +5,7 @@ var BPromise = require('bluebird');
 global.Promise = BPromise;
 var PouchDB = require('pouchdb');
 var seed = require('pouchdb-seed-design');
+var helper = require('./helper.js');
 
 describe('SuperLogin', function() {
 
@@ -16,9 +17,10 @@ describe('SuperLogin', function() {
   var accessPass;
   var expireCompare;
 
-  var server = 'http://localhost:4000';
 
   var config = require('./test.config');
+  var server = 'http://localhost:5000';
+  var dbUrl = helper.getDBUrl(config.dbServer);
 
   var newUser = {
     name: 'Kewl Uzer',
@@ -36,71 +38,79 @@ describe('SuperLogin', function() {
     confirmPassword: '1s3cret'
   };
 
-  before(function(done) {
-    userDB = new PouchDB('http://localhost:5984/sl_test-users');
-    keysDB = new PouchDB('http://localhost:5984/sl_test-keys');
+  before(function() {
+    userDB = new PouchDB(dbUrl + "/sl_test-users");
+    keysDB = new PouchDB(dbUrl + "/sl_test-keys");
     app = require('./test-server')(config);
     app.superlogin.onCreate(function(userDoc, provider) {
       userDoc.profile = {name: userDoc.name};
       return BPromise.resolve(userDoc);
     });
+
     previous = seed(userDB, require('../designDocs/user-design'));
-    previous.then(function(){
-      done();
-    });
+    return previous;
   });
 
-  it('should create a new user', function(done) {
-    previous.then(function() {
+  after(function() {
+    return previous
+      .then(function() {
+        return BPromise.all([userDB.destroy(), keysDB.destroy()]);
+      })
+      .then(function() {
+        console.log('DBs Destroyed');
+        app.shutdown();
+      });
+  });
+
+  it('should create a new user', function() {
+    return previous.then(function() {
       return new BPromise(function(resolve, reject) {
         request
           .post(server + '/auth/register')
           .send(newUser)
-          .end(function(error, res) {
+          .end(function(err, res) {
+            if (err) return reject(err);
             expect(res.status).to.equal(201);
             expect(res.body.success).to.equal('User created.');
             console.log('User created');
-            done();
+            resolve();
           });
       });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should verify the email', function(done) {
+  it('should verify the email', function() {
     var emailToken;
-    previous.then(function() {
+    return previous.then(function() {
       return userDB.get('kewluzer')
         .then(function(record) {
+          console.log(record);
           emailToken = record.unverifiedEmail.token;
+          return 1;
         })
         .then(function() {
           return new BPromise(function(resolve, reject) {
             request
               .get(server + '/auth/confirm-email/' + emailToken)
-              .end(function(error, res) {
+              .end(function(err, res) {
+                if (err) return reject(err);
                 expect(res.status).to.equal(200);
                 console.log('Email successfully verified.');
                 resolve();
-                done();
               });
           });
         });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should login the user', function(done) {
-    previous.then(function() {
+  it('should login the user', function() {
+    return previous.then(function() {
       return new BPromise(function(resolve, reject) {
         request
           .post(server + '/auth/login')
           .send({ username: newUser.username, password: newUser.password })
-          .end(function(error, res) {
+          .end(function(err, res) {
+            if (err) return reject(err);
             accessToken = res.body.token;
             accessPass = res.body.password;
             expect(res.status).to.equal(200);
@@ -109,93 +119,77 @@ describe('SuperLogin', function() {
             expect(res.body.profile.name).to.equal(newUser.name);
             console.log('User successfully logged in');
             resolve();
-            done();
           });
       });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should access a protected endpoint', function(done) {
-    previous.then(function() {
+  it('should access a protected endpoint', function() {
+    return previous.then(function() {
       return new BPromise(function(resolve, reject) {
         request
           .get(server + '/auth/session')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .end(function(error, res) {
+          .end(function(err, res) {
+            if (err) return reject(err);
             expect(res.status).to.equal(200);
             console.log('Secure endpoint successfully accessed.');
             resolve();
-            done();
           });
       });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should require a role', function(done) {
-    previous.then(function() {
+  it('should require a role', function() {
+    return previous.then(function() {
       return new BPromise(function(resolve, reject) {
         request
           .get(server + '/user')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .end(function(error, res) {
+          .end(function(err, res) {
+            if (err) return reject(err);
             expect(res.status).to.equal(200);
             console.log('Role successfully required.');
             resolve();
-            done();
           });
       });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should deny access when a required role is not present', function(done) {
-    previous.then(function() {
+  it('should deny access when a required role is not present', function() {
+    return previous.then(function() {
       return new BPromise(function(resolve, reject) {
         request
           .get(server + '/admin')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .end(function(error, res) {
+          .end(function(err, res) {
+            //if (err) return reject(err);
             expect(res.status).to.equal(403);
             console.log('Admin access successfully denied.');
             resolve();
-            done();
           });
       });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should generate a forgot password token', function(done) {
-    previous.then(function() {
+  it('should generate a forgot password token', function() {
+    return previous.then(function() {
       return new BPromise(function(resolve, reject) {
         request
           .post(server + '/auth/forgot-password')
           .send({email: newUser.email})
-          .end(function(error, res) {
+          .end(function(err, res) {
+            if (err) return reject(err);
             expect(res.status).to.equal(200);
             console.log('Password token successfully generated.');
             resolve();
-            done();
           });
       });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should reset the password', function(done) {
-    previous.then(function() {
+  it('should reset the password', function() {
+    return previous.then(function() {
       return userDB.get(newUser.username)
         .then(function(resetUser) {
           var resetToken = resetUser.forgotPassword.token;
@@ -210,45 +204,36 @@ describe('SuperLogin', function() {
                 expect(res.status).to.equal(200);
                 console.log('Password successfully reset.');
                 resolve();
-                done();
               });
           });
         });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should logout the user upon password reset', function(done) {
-    previous.then(function() {
+  it('should logout the user upon password reset', function() {
+    return previous.then(function() {
       return new BPromise(function(resolve, reject) {
         request
           .get(server + '/auth/session')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .end(function(error, res) {
+          .end(function(err, res) {
+            //if (err) return reject(err);
             expect(res.status).to.equal(401);
             console.log('User has been successfully logged out on password reset.');
             resolve();
-            done();
           });
       });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should login with the new password', function(done) {
-    previous.then(function() {
+  it('should login with the new password', function() {
+    return previous.then(function() {
       return new BPromise(function(resolve, reject) {
         request
           .post(server + '/auth/login')
           .send({ username: newUser.username, password: 'newpass' })
-          .end(function(error, res) {
-            if(error) {
-              done(new Error('Failed to log in.'));
-            }
+          .end(function(err, res) {
+            if (err) return reject('Failed to log in. ' + err);
             accessToken = res.body.token;
             accessPass = res.body.password;
             expireCompare = res.body.expires;
@@ -258,37 +243,30 @@ describe('SuperLogin', function() {
             expect(res.body.token.length).to.be.above(10);
             console.log('User successfully logged in with new password');
             resolve();
-            done();
           });
       });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should refresh the session', function(done) {
-    previous.then(function() {
+  it('should refresh the session', function() {
+    return previous.then(function() {
       return new BPromise(function(resolve, reject) {
         request
           .post(server + '/auth/refresh')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .end(function(error, res) {
+          .end(function(err, res) {
+            if (err) return reject(err);
             expect(res.status).to.equal(200);
             expect(res.body.expires).to.be.above(expireCompare);
             console.log('Session successfully refreshed.');
             resolve();
-            done();
           });
       });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should change the password', function(done) {
-    previous.then(function() {
+  it('should change the password', function() {
+    return previous.then(function() {
       return userDB.get(newUser.username)
         .then(function(resetUser) {
           return new BPromise(function(resolve, reject) {
@@ -303,18 +281,14 @@ describe('SuperLogin', function() {
                 expect(res.status).to.equal(200);
                 console.log('Password successfully changed.');
                 resolve();
-                done();
               });
           });
         });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should logout the user', function(done) {
-    previous
+  it('should logout the user', function() {
+    return previous
       .then(function() {
         return new BPromise(function(resolve, reject) {
           request
@@ -337,18 +311,14 @@ describe('SuperLogin', function() {
                 expect(res.status).to.equal(401);
                 console.log('User has been successfully logged out.');
                 resolve();
-                done();
               });
           });
         });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should login after creating a new user', function(done) {
-    previous.then(function() {
+  it('should login after creating a new user', function() {
+    return previous.then(function() {
       app.config.setItem('security.loginOnRegistration', true);
       return new BPromise(function(resolve, reject) {
         request
@@ -361,17 +331,13 @@ describe('SuperLogin', function() {
             /* jshint +W030 */
             console.log('User created and logged in');
             resolve();
-            done();
           });
       });
-    })
-      .catch(function(err) {
-        done(err);
-      });
+    });
   });
 
-  it('should validate a username', function(done) {
-    previous
+  it('should validate a username', function() {
+    return previous
       .then(function() {
         return new BPromise(function(resolve, reject) {
           request
@@ -391,17 +357,13 @@ describe('SuperLogin', function() {
               expect(res.status).to.equal(409);
               console.log('Validate Username is working');
               resolve();
-              done();
             });
         });
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
-  it('should validate an email', function(done) {
-    previous
+  it('should validate an email', function() {
+    return previous
       .then(function() {
         return new BPromise(function(resolve, reject) {
           request
@@ -421,16 +383,12 @@ describe('SuperLogin', function() {
               expect(res.status).to.equal(409);
               console.log('Validate Email is working');
               resolve();
-              done();
             });
         });
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 
-  it('should block a user after failed logins', function(done) {
+  it('should block a user after failed logins', function() {
     function attemptLogin(username, password) {
       return new BPromise(function(resolve, reject) {
         request
@@ -441,7 +399,8 @@ describe('SuperLogin', function() {
           });
       });
     }
-    previous
+
+    return previous
       .then(function() {
         return attemptLogin('kewluzer', 'wrong');
       })
@@ -463,26 +422,7 @@ describe('SuperLogin', function() {
       .then(function(result) {
         expect(result.status).to.equal(401);
         expect(result.message.search('Your account is currently locked')).to.equal(0);
-        done();
         return BPromise.resolve();
-      })
-      .catch(function(err) {
-        done(err);
-      });
-  });
-
-  it('should destroy the databases', function(done) {
-    previous
-      .finally(function() {
-        return BPromise.all([userDB.destroy(), keysDB.destroy()]);
-      })
-      .then(function() {
-        console.log('DBs Destroyed');
-        app.shutdown();
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 

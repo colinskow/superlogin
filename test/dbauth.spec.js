@@ -161,7 +161,7 @@ describe('DBAuth', function() {
 
   it('should create a new user database', function(done) {
     var userDoc = {
-      _id: 'TEST.user@cool.com',
+      _id: 'TEST.user-31@cool.com',
       session: {
         key1: {expires: Date.now() + 50000},
         key2: {expires: Date.now() + 50000}
@@ -173,7 +173,7 @@ describe('DBAuth', function() {
         return dbAuth.addUserDB(userDoc, 'personal', ['test'], 'private', [], ['admin_role'], ['member_role']);
       })
       .then(function(finalDBName) {
-        expect(finalDBName).to.equal('test_personal$test(2e)user(40)cool(2e)com');
+        expect(finalDBName).to.equal('test_personal$test(2e)user(2d)31(40)cool(2e)com');
         newDB = new PouchDB('http://localhost:5984/' + finalDBName);
         return newDB.get('_security');
       }).then(function(secDoc) {

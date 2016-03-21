@@ -11,7 +11,7 @@ function start(config) {
   var app = express();
 
   // all environments
-  app.set('port', process.env.PORT || config.port ||  4000);
+  app.set('port', process.env.PORT || config.port ||  5000);
   app.use(morgan('dev'));
   app.use(bodyParser.json());
 

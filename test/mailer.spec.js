@@ -38,7 +38,7 @@ var theUser = {
 var mailer = new Mailer(mailerTestConfig);
 
 describe('Mailer', function() {
-  it('should send a confirmation email', function(done) {
+  it('should send a confirmation email', function() {
     return mailer.sendEmail('confirmEmail', 'super@example.com', {req: req, user: theUser})
       .then(function(result) {
         var response = result.response.toString();
@@ -47,10 +47,6 @@ describe('Mailer', function() {
         expect(response.search('Subject: Please confirm your email')).to.be.greaterThan(-1);
         expect(response.search('Hi Super,')).to.be.greaterThan(-1);
         expect(response.search('https://example.com/auth/confirm-email/abc123')).to.be.greaterThan(-1);
-        done();
-      })
-      .catch(function(err) {
-        done(err);
       });
   });
 

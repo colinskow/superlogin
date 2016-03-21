@@ -36,7 +36,7 @@ gulp.task('user-test', ['dbauth-test'], function () {
 });
 
 gulp.task('final-test', ['user-test'], function () {
-  return gulp.src(['test/test.js'], {read: false})
+  return gulp.src(['test/superlogin.spec.js'], {read: false})
     .pipe(mocha({timeout: 2000}));
 });
 

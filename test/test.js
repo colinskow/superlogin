@@ -5,7 +5,7 @@ var BPromise = require('bluebird');
 global.Promise = BPromise;
 var PouchDB = require('pouchdb');
 var seed = require('pouchdb-seed-design');
-var helper = require('./helper.js');
+var util = require('../lib/util.js');
 
 describe('SuperLogin', function() {
 
@@ -20,7 +20,7 @@ describe('SuperLogin', function() {
 
   var config = require('./test.config');
   var server = 'http://localhost:5000';
-  var dbUrl = helper.getDBUrl(config.dbServer);
+  var dbUrl = util.getDBURL(config.dbServer);
 
   var newUser = {
     name: 'Kewl Uzer',

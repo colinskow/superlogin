@@ -11,9 +11,9 @@ var util = require('../lib/util');
 var seed = require('pouchdb-seed-design');
 var request = require('superagent');
 var expect = require('chai').expect;
-var helper = require('./helper.js');
 var config = require('./test.config.js');
-var dbUrl = helper.getDBUrl(config.dbServer);
+
+var dbUrl = util.getDBURL(config.dbServer);
 
 var emitter = new events.EventEmitter();
 

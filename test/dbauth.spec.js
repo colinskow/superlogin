@@ -6,10 +6,10 @@ var request = require('superagent');
 var expect = require('chai').expect;
 var DBAuth = require('../lib/dbauth');
 var Configure = require('../lib/configure');
-var helper = require('./helper.js');
+var util = require('../lib/util.js');
 var config = require('./test.config.js');
 
-var dbUrl = helper.getDBUrl(config.dbServer);
+var dbUrl = util.getDBURL(config.dbServer);
 
 var userDB = new PouchDB(dbUrl + "/cane_test_users");
 var keysDB = new PouchDB(dbUrl + "/cane_test_keys");

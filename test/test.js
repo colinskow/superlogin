@@ -57,7 +57,7 @@ describe('SuperLogin', function() {
         return BPromise.all([userDB.destroy(), keysDB.destroy()]);
       })
       .then(function() {
-        console.log('DBs Destroyed');
+        // console.log('DBs Destroyed');
         app.shutdown();
       });
   });
@@ -72,7 +72,7 @@ describe('SuperLogin', function() {
             if (err) return reject(err);
             expect(res.status).to.equal(201);
             expect(res.body.success).to.equal('User created.');
-            console.log('User created');
+            // console.log('User created');
             resolve();
           });
       });
@@ -84,7 +84,6 @@ describe('SuperLogin', function() {
     return previous.then(function() {
       return userDB.get('kewluzer')
         .then(function(record) {
-          console.log(record);
           emailToken = record.unverifiedEmail.token;
           return 1;
         })
@@ -95,7 +94,7 @@ describe('SuperLogin', function() {
               .end(function(err, res) {
                 if (err) return reject(err);
                 expect(res.status).to.equal(200);
-                console.log('Email successfully verified.');
+                // console.log('Email successfully verified.');
                 resolve();
               });
           });
@@ -117,7 +116,7 @@ describe('SuperLogin', function() {
             expect(res.body.roles[0]).to.equal('user');
             expect(res.body.token.length).to.be.above(10);
             expect(res.body.profile.name).to.equal(newUser.name);
-            console.log('User successfully logged in');
+            // console.log('User successfully logged in');
             resolve();
           });
       });
@@ -133,7 +132,7 @@ describe('SuperLogin', function() {
           .end(function(err, res) {
             if (err) return reject(err);
             expect(res.status).to.equal(200);
-            console.log('Secure endpoint successfully accessed.');
+            // console.log('Secure endpoint successfully accessed.');
             resolve();
           });
       });
@@ -149,7 +148,7 @@ describe('SuperLogin', function() {
           .end(function(err, res) {
             if (err) return reject(err);
             expect(res.status).to.equal(200);
-            console.log('Role successfully required.');
+            // console.log('Role successfully required.');
             resolve();
           });
       });
@@ -165,7 +164,7 @@ describe('SuperLogin', function() {
           .end(function(err, res) {
             //if (err) return reject(err);
             expect(res.status).to.equal(403);
-            console.log('Admin access successfully denied.');
+            // console.log('Admin access successfully denied.');
             resolve();
           });
       });
@@ -181,7 +180,7 @@ describe('SuperLogin', function() {
           .end(function(err, res) {
             if (err) return reject(err);
             expect(res.status).to.equal(200);
-            console.log('Password token successfully generated.');
+            // console.log('Password token successfully generated.');
             resolve();
           });
       });
@@ -202,7 +201,7 @@ describe('SuperLogin', function() {
                   throw new Error('Failed to reset the password.');
                 }
                 expect(res.status).to.equal(200);
-                console.log('Password successfully reset.');
+                // console.log('Password successfully reset.');
                 resolve();
               });
           });
@@ -219,7 +218,7 @@ describe('SuperLogin', function() {
           .end(function(err, res) {
             //if (err) return reject(err);
             expect(res.status).to.equal(401);
-            console.log('User has been successfully logged out on password reset.');
+            // console.log('User has been successfully logged out on password reset.');
             resolve();
           });
       });
@@ -238,10 +237,9 @@ describe('SuperLogin', function() {
             accessPass = res.body.password;
             expireCompare = res.body.expires;
             expect(res.status).to.equal(200);
-            console.log(res.body.roles);
             expect(res.body.roles[0]).to.equal('user');
             expect(res.body.token.length).to.be.above(10);
-            console.log('User successfully logged in with new password');
+            // console.log('User successfully logged in with new password');
             resolve();
           });
       });
@@ -258,7 +256,7 @@ describe('SuperLogin', function() {
             if (err) return reject(err);
             expect(res.status).to.equal(200);
             expect(res.body.expires).to.be.above(expireCompare);
-            console.log('Session successfully refreshed.');
+            // console.log('Session successfully refreshed.');
             resolve();
           });
       });
@@ -279,7 +277,7 @@ describe('SuperLogin', function() {
                   throw new Error('Failed to change the password.');
                 }
                 expect(res.status).to.equal(200);
-                console.log('Password successfully changed.');
+                // console.log('Password successfully changed.');
                 resolve();
               });
           });
@@ -309,7 +307,7 @@ describe('SuperLogin', function() {
               .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
               .end(function(error, res) {
                 expect(res.status).to.equal(401);
-                console.log('User has been successfully logged out.');
+                // console.log('User has been successfully logged out.');
                 resolve();
               });
           });
@@ -329,7 +327,7 @@ describe('SuperLogin', function() {
             /* jshint -W030 */
             expect(res.body.token).to.be.a.string;
             /* jshint +W030 */
-            console.log('User created and logged in');
+            // console.log('User created and logged in');
             resolve();
           });
       });
@@ -355,7 +353,7 @@ describe('SuperLogin', function() {
             .get(server + '/auth/validate-username/kewluzer')
             .end(function(error, res) {
               expect(res.status).to.equal(409);
-              console.log('Validate Username is working');
+              // console.log('Validate Username is working');
               resolve();
             });
         });
@@ -381,7 +379,7 @@ describe('SuperLogin', function() {
             .get(server + '/auth/validate-username/kewluzer@example.com')
             .end(function(error, res) {
               expect(res.status).to.equal(409);
-              console.log('Validate Email is working');
+              // console.log('Validate Email is working');
               resolve();
             });
         });

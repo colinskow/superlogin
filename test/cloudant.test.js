@@ -14,12 +14,6 @@ describe('Cloudant', function() {
 
   previous = BPromise.resolve();
 
-  /* beforeEach(function(done) {
-    previous.then(function() {
-      done();
-    })
-  }); */
-
   before(function() {
     return previous.then(function() {
       testDB = new PouchDB(cloudantUrl + '/temp_test');
@@ -30,8 +24,8 @@ describe('Cloudant', function() {
   after(function() {
     this.timeout(5000);
     return previous.finally(function() {
-      // return testDB.destroy();
-      return BPromise.resolve();
+      return testDB.destroy();
+      // return BPromise.resolve();
     });
   });
 

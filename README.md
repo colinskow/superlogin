@@ -474,4 +474,4 @@ Quits Redis if that is the session adapter you are using. This is useful for cle
 
 ## Releases
 
-Moved to [CHANGELOG.md](https://github.com/colinskow/superlogin/blob/master/CHANGELOG.MD)
+Moved to [CHANGELOG.md](https://github.com/colinskow/superlogin/blob/master/CHANGELOG.md)

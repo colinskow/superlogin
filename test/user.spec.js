@@ -5,7 +5,6 @@ var PouchDB = require('pouchdb');
 var BPromise = require('bluebird');
 var Configure = require('../lib/configure');
 var User = require('../lib/user');
-var Session = require('../lib/session');
 var Mailer = require('../lib/mailer');
 var util = require('../lib/util');
 var seed = require('pouchdb-seed-design');

@@ -68,7 +68,8 @@ var userConfig = new Configure({
     protocol: config.dbServer.protocol,
     host: config.dbServer.host,
     user: config.dbServer.user,
-    password: config.dbServer.password
+    password: config.dbServer.password,
+    publicURL: 'https://mydb.example.com'
   },
   session: {
     adapter: 'memory'
@@ -252,7 +253,8 @@ describe('User Model', function() {
         sessionPass = result.password;
         firstExpires = result.expires;
         expect(sessionKey).to.be.a('string');
-        expect(result.userDBs.usertest).to.equal('http://' + result.token + ':' + result.password + '@' + config.dbServer.host + '/test_usertest$superuser');
+        expect(result.userDBs.usertest).to.equal('https://' + sessionKey + ':' + sessionPass + '@' +
+          'mydb.example.com/test_usertest$superuser');
         return(userDB.get(testUserForm.username));
       })
       .then(function(user) {

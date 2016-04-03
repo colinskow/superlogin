@@ -26,7 +26,9 @@ var testUserForm = {
   username: 'superuser',
   email: 'superuser@example.com',
   password: 'secret',
-  confirmPassword: 'secret'
+  confirmPassword: 'secret',
+  age: '32',
+  zipcode: 'ABC123'
 };
 
 var emailUserForm = {
@@ -99,7 +101,8 @@ var userConfig = new Configure({
   userModel: {
     static: {
       modelTest: true
-    }
+    },
+    whitelist: ['age', 'zipcode']
   }
 });
 
@@ -175,6 +178,8 @@ describe('User Model', function() {
         expect(newUser.activity[0].action).to.equal('signup');
         expect(newUser.onCreate1).to.equal(true);
         expect(newUser.onCreate2).to.equal(true);
+        expect(newUser.age).to.equal('32');
+        expect(newUser.zipcode).to.equal('ABC123');
         return emitterPromise;
       });
   });
@@ -790,7 +795,7 @@ describe('User Model', function() {
 
   function checkDBExists(dbname) {
     var finalUrl = dbUrl + '/' + dbname;
-    return BPromise.fromNode(function(callback) {
+    return BPromise.fromCallback(function(callback) {
       request.get(finalUrl)
         .end(callback);
     })

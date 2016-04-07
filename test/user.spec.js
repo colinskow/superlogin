@@ -43,7 +43,8 @@ var userConfig = new Configure({
   },
   security: {
     defaultRoles: ['user'],
-    userActivityLogSize: 3
+    userActivityLogSize: 3,
+    defaultUserAccess: ["sync"]
   },
   local: {
     sendConfirmEmail: true,
@@ -82,7 +83,8 @@ var userConfig = new Configure({
     model: {
       _default: {
         designDocs: ['test'],
-        permissions: ['_reader', '_writer', '_replicator']
+        permissions: ['_reader', '_writer', '_replicator'],
+        requireUserAccess: ["sync"]
       }
     },
     defaultDBs: {
@@ -233,7 +235,7 @@ describe('User Model', function() {
       });
   });
 
-  var sessionKey, sessionPass, firstExpires;
+  var sessionKey, sessionPass, firstExpires, sessionUserDBs;
 
   it('should generate a new session for the user', function() {
     var emitterPromise = new BPromise(function(resolve) {
@@ -255,6 +257,8 @@ describe('User Model', function() {
         expect(sessionKey).to.be.a('string');
         expect(result.userDBs.usertest).to.equal('https://' + sessionKey + ':' + sessionPass + '@' +
           'mydb.example.com/test_usertest$superuser');
+
+        sessionUserDBs = result.userDBs;
         return(userDB.get(testUserForm.username));
       })
       .then(function(user) {
@@ -272,6 +276,46 @@ describe('User Model', function() {
       })
       .then(function(secDoc) {
         expect(secDoc.members.names.length).to.equal(1);
+      });
+  });
+
+  it('should have allowed and included "usertest" into session.userDBs with the defaultUserAccess', function() {
+    return previous
+      .then(function() {
+          expect(sessionUserDBs).to.have.property("usertest");
+      });
+  });
+
+  it("should NOT have allowed and included 'usertest' into session.userDBs when user.access is modified to ['none']", function() {
+    var previous_access = null;
+    var testAccessSession = null;
+    return previous.then(function() {
+      //console.log('Fetching the user');
+      return userDB.get(testUserForm.username);
+    })
+    .then(function(testUser) {
+        //console.log("Modifying the user's access to ['none']");
+        previous_access = testUser.access;
+        testUser.access = ["none"];
+        return userDB.put(testUser);
+      })
+      .then(function(result) {
+        //console.log("After updated access, Create a session");
+        return user.createSession(testUserForm.username, 'local', req);
+      })
+      .then(function(result) {
+          //console.log("Session created");
+          testAccessSession = result;
+          return userDB.get(testUserForm.username);
+      })
+      .then(function(nUser){
+        //console.log("Restore User's original Access");
+        nUser.access = previous_access;
+        return userDB.put(nUser);
+      })
+      .then(function(userData)
+      {
+        expect(testAccessSession.userDBs).to.not.have.property("usertest");
       });
   });
 

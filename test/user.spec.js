@@ -73,7 +73,8 @@ var userConfig = new Configure({
     publicURL: 'https://mydb.example.com'
   },
   session: {
-    adapter: 'memory'
+    adapter: 'memory',
+    checkUserDBsDiffFromDefault : true
   },
   userDBs: {
     defaultSecurityRoles: {
@@ -746,6 +747,48 @@ describe('User Model', function() {
       });
   });
 
+  it("on user's session creation, it should refresh personalDBs if the defaultDBs change", function() {
+    var randomDBName = null;
+    var testSession = null;
+    var previousPersonalsSignature = null;
+    return previous.then(function() {
+      //console.log('Fetching the user');
+      return userDB.get(testUserForm.username);
+    })
+      .then(function(result) {
+      previousPersonalsSignature = result.privateDBsSignature;
+      randomDBName = Date.now()+ "p";
+      userConfig.getItem("userDBs.defaultDBs.private").push(randomDBName);
+      userConfig.refreshSignature("userDBs.defaultDBs.private");
+      //console.log("After added a random personalDB, Create a session ", randomDBName);
+      return user.createSession(testUserForm.username, 'local', req);
+    })
+    .then(function(result) {
+          //console.log("Session created", result);
+          testSession = result;
+          expect(testSession.userDBs).to.have.property(randomDBName);
+          return userDB.get(testUserForm.username);
+    })
+    .then(function(newUser){
+          expect(newUser.privateDBsSignature).to.not.equals(previousPersonalsSignature);
+          //Now restore the old privates
+          var privateDefaultDBs = userConfig.getItem("userDBs.defaultDBs.private");
+          privateDefaultDBs.splice( privateDefaultDBs.indexOf(randomDBName), 1 );
+          userConfig.refreshSignature("userDBs.defaultDBs.private");
+          return user.createSession(testUserForm.username, 'local', req);
+    })
+    .then(function(newSession)
+    {
+      //Now that the random has been removed, it should not more appear in userDBs
+      expect(newSession.userDBs).to.not.have.property(randomDBName);
+      return userDB.get(testUserForm.username);
+    })
+    .then(function(newUser){
+      //console.log("Test signature difference, to know if the function well update the user");
+      expect(newUser.privateDBsSignature).to.equals(previousPersonalsSignature);
+    });
+  });
+
   it('should add a new user database', function() {
     return previous
       .then(function() {
@@ -837,6 +880,7 @@ describe('User Model', function() {
         }
       });
   });
+
 
   function checkDBExists(dbname) {
     var finalUrl = dbUrl + '/' + dbname;

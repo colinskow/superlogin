@@ -38,6 +38,7 @@
     "ejs": "^2.3.1",
     "express": "^4.13.3",
     "extend": "^3.0.0",
+    "fs-extra": "^0.28.0",
     "node-uuid": "^1.4.3",
     "nodemailer": "^2.3.0",
     "nodemailer-stub-transport": "^1.0.0",

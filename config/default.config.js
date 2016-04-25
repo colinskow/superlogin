@@ -16,7 +16,10 @@ module.exports = {
     passwordField: 'password'
   },
   session: {
-    adapter: 'memory'
+    adapter: 'memory',
+    file: {
+      sessionsRoot: '.sessions'
+    }
   },
   dbServer: {
     protocol: 'http://',

@@ -91,7 +91,7 @@ describe('DBAuth', function() {
       .then(function() {
         throw new Error('Failed to delete testkey');
       }).catch(function(err) {
-        if (err.reason && err.reason == 'deleted') return;
+        if (err.reason && (err.reason === 'deleted' || err.reason === 'missing')) return;
         throw err;
       });
   });

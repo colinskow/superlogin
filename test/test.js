@@ -386,18 +386,35 @@ describe('SuperLogin', function() {
       });
   });
 
-  it('should block a user after failed logins', function() {
-    function attemptLogin(username, password) {
-      return new BPromise(function(resolve, reject) {
-        request
-          .post(server + '/auth/login')
-          .send({ username: username, password: password })
-          .end(function(error, res) {
-            resolve({status: res.status, message: res.body.message});
-          });
-      });
-    }
+  function attemptLogin(username, password) {
+    return new BPromise(function(resolve, reject) {
+      request
+        .post(server + '/auth/login')
+        .send({ username: username, password: password })
+        .end(function(error, res) {
+          resolve({status: res.status, message: res.body.message});
+        });
+    });
+  }
 
+  it('should respond unauthorized if a user logs in and no password is set', function() {
+    return previous
+      .then(function() {
+        return userDB.put({
+          _id: 'nopassword',
+          email: 'nopassword@example.com'
+        });
+      })
+      .then(function() {
+        return attemptLogin('nopassword', 'wrongpassword');
+      })
+      .then(function(result) {
+        expect(result.status).to.equal(401);
+        expect(result.message).to.equal('Invalid username or password');
+      });
+  });
+
+  it('should block a user after failed logins', function() {
     return previous
       .then(function() {
         return attemptLogin('kewluzer', 'wrong');

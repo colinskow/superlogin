@@ -2,7 +2,8 @@ language: node_js
 cache:
   - node_modules
 node_js:
-  - "4.0"
+  - "4"
+  - "5"
 services:
   - couchdb
   - redis

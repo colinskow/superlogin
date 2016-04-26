@@ -9,7 +9,8 @@ module.exports = {
     sessionLife: 86400,
     tokenLife: 86400,
     loginOnRegistration: false,
-    loginOnPasswordReset: false
+    loginOnPasswordReset: false,
+    tokenPasswordResetType : 'hash'
   },
   local: {
     usernameField: 'username',
@@ -35,6 +36,11 @@ module.exports = {
     forgotPassword: {
       subject: 'Your password reset link',
       template: path.join(__dirname, '../templates/email/forgot-password.ejs'),
+      format: 'text'
+    },
+    forgotPasswordDigit: {
+      subject: 'Your password reset digit',
+      template: path.join(__dirname, './templates/email/forgot-password-digit.ejs'),
       format: 'text'
     }
   }

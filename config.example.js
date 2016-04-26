@@ -30,7 +30,12 @@ module.exports = {
     // If set to true, the user will be logged in automatically after registering
     loginOnRegistration: false,
     // If set to true, the user will be logged in automatically after resetting the password
-    loginOnPasswordReset: false
+    loginOnPasswordReset: false,
+
+    // 'hash' or 'pin'
+    // If set to 'hash', the user will receive an email with a link to use the hash token to change the password with password-reset function
+    // if set to 'pin', the user will receive an email with a 5 pin digit (token) to use in order to change the password with password-reset function
+    tokenPasswordResetType : 'pin',
   },
   local: {
     // Send out a confirm email after each user signs up with local login
@@ -102,6 +107,11 @@ module.exports = {
     forgotPassword: {
       subject: 'Your password reset link',
       template: path.join(__dirname, './templates/email/forgot-password.ejs'),
+      format: 'text'
+    },
+    forgotPasswordDigit: {
+      subject: 'Your password reset digit',
+      template: path.join(__dirname, './templates/email/forgot-password-digit.ejs'),
       format: 'text'
     }
   },

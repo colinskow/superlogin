@@ -19,9 +19,20 @@ var config = new Configure({
   }
 });
 
+var fileConfig = new Configure({
+  session: {
+    adapter: 'file',
+    file: {
+      sessionsRoot: '.session'
+    }
+  }
+});
 
 describe('Session', function() {
   runTest(config, 'Memory adapter')
+    .finally(function() {
+      return runTest(fileConfig, 'File adapter');
+    })
     .finally(function() {
       config.setItem('session.adapter', 'redis');
       return runTest(config, 'Redis adapter');
@@ -113,7 +124,3 @@ function runTest(config, adapter) {
   });
 
 }
-
-
-
-

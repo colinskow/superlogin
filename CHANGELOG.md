@@ -1,5 +1,10 @@
 ## Change Log
 
+#### Misc. Bug Fixes (0.6.1) 2016-04-02
+* Misc bugfixes
+* Documentation improvements
+* Now testing against Node 4.x and 5.x
+
 ##### Improved Tests, Enhancements, Bugfixes (0.6.0) 2016-04-02
 * Updated dependencies
 * Improved unit tests (thanks [@tohagan](https://github.com/tohagan) and [@ybian](https://github.com/ybian))

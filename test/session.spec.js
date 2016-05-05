@@ -3,6 +3,7 @@ var BPromise = require('bluebird');
 var expect = require('chai').expect;
 var Session = require('../lib/session');
 var Configure = require('../lib/configure');
+var rimraf = BPromise.promisify(require('rimraf'));
 
 var testToken = {
   _id: 'colinskow',
@@ -29,13 +30,16 @@ var fileConfig = new Configure({
 });
 
 describe('Session', function() {
-  runTest(config, 'Memory adapter')
+  return runTest(config, 'Memory adapter')
     .finally(function() {
       return runTest(fileConfig, 'File adapter');
     })
     .finally(function() {
       config.setItem('session.adapter', 'redis');
       return runTest(config, 'Redis adapter');
+    })
+    .finally(function() {
+      return rimraf('./.session');
     });
 });
 
@@ -43,7 +47,6 @@ function runTest(config, adapter) {
 
   var session = new Session(config);
   var previous;
-  // console.log('Running test for ' + adapter);
 
   return new BPromise(function(resolve, reject) {
 

@@ -279,9 +279,10 @@ Authentication required. Logs out every session the user has open and deauthoriz
 
 ##### `POST /forgot-password`
 Sends the forgot password email containing a password reset token. The life of the token can be set under `security.tokenLife` (in seconds).
+Or Sends the forgot password email containing a PIN 5 digit number. The life of the PIN token is 15 Minutes.
 
 ##### `POST /password-reset`
-Resets the password. Required fields: `token`, `password`, and `confirmPassword`.
+Resets the password. Required fields: `token` (or `PIN token`), `password`, and `confirmPassword`.
 
 ##### `POST /password-change`
 Authentication required. Changes the user's password or creates one if it doesn't exist. Required fields: `newPassword`, and `confirmPassword`. If the user already has a password set then `currentPassword` is required.

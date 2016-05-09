@@ -1,5 +1,7 @@
 ## Change Log
 
+
+
 ##### Improved Tests, Enhancements, Bugfixes (0.6.0) 2016-04-02
 * Updated dependencies
 * Improved unit tests (thanks [@tohagan](https://github.com/tohagan) and [@ybian](https://github.com/ybian))

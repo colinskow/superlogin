@@ -38,7 +38,7 @@
     "ejs": "^2.3.1",
     "express": "^4.13.3",
     "extend": "^3.0.0",
-    "fs-extra": "^0.28.0",
+    "fs-extra": "^0.30.0",
     "node-uuid": "^1.4.3",
     "nodemailer": "^2.3.0",
     "nodemailer-stub-transport": "^1.0.0",
@@ -58,12 +58,10 @@
     "gulp": "^3.8.6",
     "gulp-jshint": "^2.0.0",
     "gulp-mocha": "^2.2.0",
-    "install": "^0.7.3",
     "jshint": "^2.9.1",
     "jshint-stylish": "^2.1.0",
     "mocha": "^2.4.5",
     "morgan": "^1.5.2",
-    "npm": "^3.8.8",
     "rimraf": "^2.5.2"
   }
 }

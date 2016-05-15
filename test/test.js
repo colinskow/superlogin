@@ -1,6 +1,11 @@
 'use strict';
+
 var request = require('superagent');
-var expect= require('chai').expect;
+var chai = require('chai');
+var sinon = require('sinon');
+var expect= chai.expect;
+chai.use(require('sinon-chai'));
+
 var BPromise = require('bluebird');
 global.Promise = BPromise;
 var PouchDB = require('pouchdb');
@@ -16,7 +21,7 @@ describe('SuperLogin', function() {
   var accessToken;
   var accessPass;
   var expireCompare;
-
+  var resetToken = null;
 
   var config = require('./test.config');
   var server = 'http://localhost:5000';
@@ -172,6 +177,8 @@ describe('SuperLogin', function() {
   });
 
   it('should generate a forgot password token', function() {
+    var spySendMail = sinon.spy(app.superlogin.mailer, "sendEmail");
+
     return previous.then(function() {
       return new BPromise(function(resolve, reject) {
         request
@@ -180,6 +187,9 @@ describe('SuperLogin', function() {
           .end(function(err, res) {
             if (err) return reject(err);
             expect(res.status).to.equal(200);
+            // keep unhashed token emailed to user.
+            var sendEmailArgs = spySendMail.getCall(0).args;
+            resetToken = sendEmailArgs[2].token;
             // console.log('Password token successfully generated.');
             resolve();
           });
@@ -191,7 +201,6 @@ describe('SuperLogin', function() {
     return previous.then(function() {
       return userDB.get(newUser.username)
         .then(function(resetUser) {
-          var resetToken = resetUser.forgotPassword.token;
           return new BPromise(function(resolve, reject) {
             request
               .post(server + '/auth/password-reset')

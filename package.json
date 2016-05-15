@@ -62,6 +62,8 @@
     "jshint-stylish": "^2.1.0",
     "mocha": "^2.4.5",
     "morgan": "^1.5.2",
-    "rimraf": "^2.5.2"
+    "rimraf": "^2.5.2",
+    "sinon": "^1.17.4",
+    "sinon-chai": "^2.8.0"
   }
 }

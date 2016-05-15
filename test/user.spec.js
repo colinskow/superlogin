@@ -9,8 +9,12 @@ var Mailer = require('../lib/mailer');
 var util = require('../lib/util');
 var seed = require('pouchdb-seed-design');
 var request = require('superagent');
-var expect = require('chai').expect;
 var config = require('./test.config.js');
+
+var chai = require('chai');
+var sinon = require('sinon');
+var expect= chai.expect;
+chai.use(require('sinon-chai'));
 
 var dbUrl = util.getDBURL(config.dbServer);
 
@@ -404,6 +408,7 @@ describe('User Model', function() {
   });
 
   var resetToken;
+  var resetTokenHashed;
 
   it('should generate a password reset token', function() {
     var emitterPromise = new BPromise(function(resolve) {
@@ -413,6 +418,8 @@ describe('User Model', function() {
       });
     });
 
+    var spySendMail = sinon.spy(mailer, "sendEmail");
+
     return previous.then(function() {
       // console.log('Generating password reset token');
       return user.forgotPassword(testUserForm.email, req);
@@ -421,10 +428,22 @@ describe('User Model', function() {
         return userDB.get(testUserForm.username);
       })
       .then(function(result) {
-        resetToken = result.forgotPassword.token;
+        resetTokenHashed = result.forgotPassword.token; // hashed token stored in db
+
         expect(result.forgotPassword.token).to.be.a('string');
         expect(result.forgotPassword.expires).to.be.above(Date.now());
         expect(result.activity[0].action).to.equal('forgot password');
+
+        expect(spySendMail.callCount).to.equal(1);
+
+        var args = spySendMail.getCall(0).args;
+        expect(args[0]).to.equal('forgotPassword');
+        expect(args[1]).to.equal(testUserForm.email);
+        expect(args[2].user._id).to.equal(testUserForm.username);
+        expect(args[2].token).to.be.a('string');
+
+        resetToken = args[2].token; // keep unhashed token emailed to user.
+        expect(resetTokenHashed).to.not.equal(resetToken);
         return emitterPromise;
       });
   });

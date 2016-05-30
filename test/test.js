@@ -11,6 +11,8 @@ global.Promise = BPromise;
 var PouchDB = require('pouchdb');
 var seed = require('pouchdb-seed-design');
 var util = require('../lib/util.js');
+var DBAuth = require('../lib/dbauth');
+var Configure = require('../lib/configure');
 
 describe('SuperLogin', function() {
 
@@ -22,6 +24,7 @@ describe('SuperLogin', function() {
   var accessPass;
   var expireCompare;
   var resetToken = null;
+  var dbAuth;
 
   var config = require('./test.config');
   var server = 'http://localhost:5000';
@@ -42,13 +45,16 @@ describe('SuperLogin', function() {
     password: '1s3cret',
     confirmPassword: '1s3cret'
   };
+  
+  
 
   before(function() {
     userDB = new PouchDB(dbUrl + "/sl_test-users");
     keysDB = new PouchDB(dbUrl + "/sl_test-keys");
+    dbAuth = new DBAuth(new Configure(config), userDB, keysDB);
     app = require('./test-server')(config);
     app.superlogin.onCreate(function(userDoc, provider) {
-      userDoc.profile = {name: userDoc.name};
+      userDoc.profile = {name: userDoc.name};      
       return BPromise.resolve(userDoc);
     });
 
@@ -445,8 +451,109 @@ describe('SuperLogin', function() {
       })
       .then(function(result) {
         expect(result.status).to.equal(401);
-        expect(result.message.search('Your account is currently locked')).to.equal(0);
+        expect(result.message.search('Your account is currently locked')).to.equal(0);        
         return BPromise.resolve();
+      });
+  });
+  
+  it('should delete all expired keys', function() {
+    var now = Date.now();
+    var db1, db2;
+    var user1 = {
+      _id: 'testuser1',
+      session: {
+        oldkey1: {expires: now + 50000},
+        goodkey1: {expires: now + 50000}
+      },
+      personalDBs: {'test_expiretest$testuser1': {
+        permissions: null,
+        name: 'expiretest'
+      }}
+    };
+
+    var user2 = {
+      _id: 'testuser2',
+      session: {
+        oldkey2: {expires: now + 50000},
+        goodkey2: {expires: now + 50000}
+      },
+      personalDBs: {'test_expiretest$testuser2': {
+        permissions: null,
+        name: 'expiretest'
+      }}
+    };
+
+    return previous
+      .then(function() {
+        var promises = [];
+        // Save the users
+        promises.push(userDB.bulkDocs([user1, user2]));
+        // Add their personal dbs
+        promises.push(dbAuth.addUserDB(user1, 'expiretest'));
+        promises.push(dbAuth.addUserDB(user2, 'expiretest'));
+        // Store the keys
+        promises.push(dbAuth.storeKey('testuser1', 'oldkey1', 'password', user1.session.oldkey1.expires));
+        promises.push(dbAuth.storeKey('testuser1', 'goodkey1', 'password', user1.session.goodkey1.expires));
+        promises.push(dbAuth.storeKey('testuser2', 'oldkey2', 'password', user2.session.oldkey2.expires));
+        promises.push(dbAuth.storeKey('testuser2', 'goodkey2', 'password', user2.session.goodkey2.expires));
+        return BPromise.all(promises);
+      })
+      .then(function() {
+        // Now we will expire the keys
+        var promises = [];
+        promises.push(userDB.get('testuser1'));
+        promises.push(userDB.get('testuser2'));
+        return BPromise.all(promises);
+      })
+      .then(function(docs) {
+        docs[0].session.oldkey1.expires = 100;
+        docs[1].session.oldkey2.expires = 100;
+        return userDB.bulkDocs(docs);
+      })
+      .then(function() {
+        // Now we will remove the expired keys
+        return app.superlogin.removeExpiredKeys();
+      })
+      .then(function() {
+        // Fetch the user docs to inspect them
+        db1 = new PouchDB(dbUrl + "/test_expiretest$testuser1");
+        db2 = new PouchDB(dbUrl + "/test_expiretest$testuser2");
+        var promises = [];
+        promises.push(userDB.get('testuser1'));
+        promises.push(userDB.get('testuser2'));
+        promises.push(keysDB.get('org.couchdb.user:goodkey1'));
+        promises.push(keysDB.get('org.couchdb.user:goodkey2'));
+        promises.push(db1.get('_security'));
+        promises.push(db2.get('_security'));
+        return BPromise.all(promises);
+      })
+      .then(function(docs) {
+        // Sessions for old keys should have been deleted, unexpired keys should be there
+        expect(docs[0].session.oldkey1).to.be.an('undefined');
+        expect(docs[0].session.goodkey1.expires).to.be.a('number');
+        expect(docs[1].session.oldkey2).to.be.an('undefined');
+        expect(docs[1].session.goodkey2.expires).to.be.a('number');
+        // The unexpired keys should still be in the keys database
+        expect(docs[2].user_id).to.equal('testuser1');
+        expect(docs[3].user_id).to.equal('testuser2');
+        // The security document for each personal db should contain exactly the good keys
+        expect(docs[4].members.names.length).to.equal(1);
+        expect(docs[4].members.names[0]).to.equal('goodkey1');
+        expect(docs[5].members.names.length).to.equal(1);
+        expect(docs[5].members.names[0]).to.equal('goodkey2');
+        // Now we'll make sure the expired keys have been deleted from the users database
+        var promises = [];
+        promises.push(keysDB.get('org.couchdb.user:oldkey1'));
+        promises.push(keysDB.get('org.couchdb.user:oldkey2'));
+        return BPromise.settle(promises);
+      })
+      .then(function(results) {
+        /* jshint -W030 */
+        expect(results[0].isRejected()).to.be.true;
+        expect(results[1].isRejected()).to.be.true;
+        /* jshint +W030 */
+        // Finally clean up
+        return BPromise.all([db1.destroy(), db2.destroy()]);
       });
   });
 

@@ -3,7 +3,8 @@ var BPromise = require('bluebird');
 var expect = require('chai').expect;
 var Session = require('../lib/session');
 var Configure = require('../lib/configure');
-var rimraf = BPromise.promisify(require('rimraf'));
+var fs = BPromise.promisifyAll(require('fs-extra'));
+var debug = require('debug-logger')('superlogin:test:session');
 
 var testToken = {
   _id: 'colinskow',
@@ -39,7 +40,7 @@ describe('Session', function() {
       return runTest(config, 'Redis adapter');
     })
     .finally(function() {
-      return rimraf('./.session');
+      return fs.removeAsync('./.session');
     });
 });
 
@@ -58,7 +59,7 @@ function runTest(config, adapter) {
             return session.confirmToken(testToken.key, testToken.password);
           })
           .then(function(result) {
-            // console.log('stored token');
+            debug.log('stored token');
             expect(result.key).to.equal(testToken.key);
             done();
           })
@@ -71,7 +72,7 @@ function runTest(config, adapter) {
         previous.then(function() {
           return session.confirmToken(testToken.key, testToken.password)
             .then(function(result) {
-              // console.log('confirmed token');
+              debug.log('confirmed token');
               expect(result._id).to.equal('colinskow');
               done();
             })
@@ -85,7 +86,7 @@ function runTest(config, adapter) {
         previous.then(function() {
           return session.confirmToken('faketoken', testToken.password)
             .catch(function (err) {
-              // console.log('rejected invalid token');
+              debug.log('rejected invalid token');
               expect(err).to.equal('invalid token');
               done();
             });
@@ -96,7 +97,7 @@ function runTest(config, adapter) {
         previous.then(function() {
           return session.confirmToken(testToken.key, 'wrongpass')
             .catch(function (err) {
-              // console.log('rejected invalid token');
+              debug.log('rejected invalid token');
               expect(err).to.equal('invalid token');
               done();
             });
@@ -114,7 +115,7 @@ function runTest(config, adapter) {
               throw new Error('failed to delete token');
             })
             .catch(function(err) {
-              // console.log('deleted token');
+              debug.log('deleted token');
               expect(err).to.equal('invalid token');
               session.quit();
               done();

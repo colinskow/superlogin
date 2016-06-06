@@ -163,7 +163,7 @@ module.exports = {
       },
       // This will pass in the user's auth token as a variable called 'state' when linking to this provider
       // Defaults to true for Google and LinkedIn, but you can enable it for other providers if needed
-      requireState: false
+      stateRequired: false
     }
   },
   // Anything here will be merged with the userModel that validates your local sign-up form.

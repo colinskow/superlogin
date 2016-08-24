@@ -261,7 +261,7 @@ It's easy to add custom fields to user documents. When added to a `profile` fiel
 2. Include the fields with [registrations](#post-register).
 3. To also fill in custom fields after social authentications use the [superlogin.onCreate](#superloginoncreatefn) handler. Example:
 
-   ``` js 
+   ``` js
    superlogin.onCreate(function(userDoc, provider) {
      if(userDoc.profile === undefined) {
        userDoc.profile = {};

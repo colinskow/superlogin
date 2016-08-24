@@ -20,6 +20,7 @@ For issues and feature requests visit the [issue tracker](https://github.com/col
 - [Database Security](#database-security)
 - [CouchDB Document Update Validation](#couchdb-document-update-validation)
 - [Adding Providers](#adding-providers)
+- [Adding additional fields](#adding-additional-fields)
 - [Advanced Configuration](#advanced-configuration)
 - [Routes](#routes)
 - [Event Emitter](#event-emitter)
@@ -245,6 +246,35 @@ superlogin.registerTokenProvider('facebook', FacebookTokenStrategy);
 ```
 
 Note that this uses the exact settings in your config as the popup window workflow.
+
+## Adding additional fields
+It's easy to add custom fields to user documents. When added to a `profile` field it will automatically be included with the session information (in a profile object).
+
+1. First whitelist the fields in the [config](https://github.com/colinskow/superlogin/blob/master/config.example.js), for example:
+
+   ``` js
+   userModel: {
+      whitelist: ['profile.fullname']
+   }
+   ```
+
+2. Include the fields with [registrations](#post-register).
+3. To also fill in custom fields after social authentications use the [superlogin.onCreate](#superloginoncreatefn) handler. Example:
+
+   ``` js 
+   superlogin.onCreate(function(userDoc, provider) {
+     if(userDoc.profile === undefined) {
+       userDoc.profile = {};
+     }
+     if(provider !== 'local') {
+       const displayName = userDoc[provider].profile.displayName;
+       if (displayName) {
+         userDoc.profile.fullname = displayName;
+       }
+     }
+     return Promise.resolve(userDoc);
+   })
+   ```
 
 ## Advanced Configuration
 

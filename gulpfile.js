@@ -40,9 +40,9 @@ gulp.task('customdbs-test', ['user-test'], function () {
     .pipe(mocha({timeout: 2000}));
 });
 
-//gulp.task('final-test', ['user-test'], function () {
-//  return gulp.src(['test/test.js'], {read: false})
-//   .pipe(mocha({timeout: 2000}));
-//});
+gulp.task('final-test', ['user-test'], function () {
+  return gulp.src(['test/test.js'], {read: false})
+   .pipe(mocha({timeout: 2000}));
+});
 
-gulp.task('default', ['customdbs-test','user-test', 'mailer-test', 'session-test', 'middleware-test', 'lint']);
+gulp.task('default', ['final-test','customdbs-test','user-test', 'mailer-test', 'session-test', 'middleware-test', 'lint']);

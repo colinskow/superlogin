@@ -39,7 +39,6 @@
     "express": "^4.13.3",
     "extend": "^3.0.0",
     "fs-extra": "^0.30.0",
-    "node-uuid": "^1.4.3",
     "nodemailer": "^2.3.0",
     "nodemailer-stub-transport": "^1.0.0",
     "passport": "^0.3.2",
@@ -50,7 +49,8 @@
     "redis": "^2.5.2",
     "sofa-model": "^0.2.0",
     "superagent": "^1.2.0",
-    "urlsafe-base64": "1.0.0"
+    "urlsafe-base64": "1.0.0",
+    "uuid": "^3.0.0"
   },
   "devDependencies": {
     "body-parser": "^1.9.2",

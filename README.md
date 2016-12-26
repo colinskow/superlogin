@@ -241,7 +241,7 @@ You must use Passport strategies that accept `access_token` posted in the body o
 Here is how to setup the Client Access Token strategy:
 
 ```js
-var FacebookTokenStrategy = require('passport-facebook-token').Strategy;
+var FacebookTokenStrategy = require('passport-facebook-token');
 superlogin.registerTokenProvider('facebook', FacebookTokenStrategy);
 ```
 

@@ -241,7 +241,7 @@ You must use Passport strategies that accept `access_token` posted in the body o
 Here is how to setup the Client Access Token strategy:
 
 ```js
-var FacebookTokenStrategy = require('passport-facebook-token').Strategy;
+var FacebookTokenStrategy = require('passport-facebook-token');
 superlogin.registerTokenProvider('facebook', FacebookTokenStrategy);
 ```
 
@@ -308,7 +308,7 @@ Authentication required. Logs out and deauthorizes all user sessions except the 
 Authentication required. Logs out every session the user has open and deauthorizes the user completely on all databases.
 
 ##### `POST /forgot-password`
-Sends the forgot password email containing a password reset token. The life of the token can be set under `security.tokenLife` (in seconds). 
+Include `email` field to send the forgot password email containing a password reset token. The life of the token can be set under `security.tokenLife` (in seconds). 
 
 Have the email template redirect back to you're app where you're app presents U.I. to gather a new password and then `POST` to `/password-reset` with the forgot-password `token` and new password
 

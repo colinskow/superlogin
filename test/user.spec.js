@@ -28,8 +28,8 @@ var testUserForm = {
   name: 'Super',
   username: 'superuser',
   email: 'superuser@example.com',
-  password: 'secret',
-  confirmPassword: 'secret',
+  password: 'superlogin',
+  confirmPassword: 'superlogin',
   age: '32',
   zipcode: 'ABC123'
 };
@@ -52,6 +52,13 @@ var userConfig = new Configure({
   local: {
     sendConfirmEmail: true,
     requireEmailConfirm: false,
+    passwordConstraints: {
+      length: {
+        minimum: 8,
+        message: "must be at least 8 characters"
+      },
+      matches: 'confirmPassword'
+    }
   },
   mailer: {
     fromEmail: 'noreply@example.com'
@@ -212,7 +219,7 @@ describe('User Model', function() {
       return userDB.get(testUserForm.username);
     })
       .then(function(newUser) {
-        return util.verifyPassword(newUser.local, 'secret');
+        return util.verifyPassword(newUser.local, 'superlogin');
       })
       .then(function(result) {
         // console.log('Password authenticated');
@@ -445,6 +452,35 @@ describe('User Model', function() {
         resetToken = args[2].token; // keep unhashed token emailed to user.
         expect(resetTokenHashed).to.not.equal(resetToken);
         return emitterPromise;
+      });
+  });
+
+  it('should not reset the password', function() {
+      var emitterPromise = new BPromise(function(resolve) {
+        emitter.once('email-changed', function(user) {
+          expect(user._id).to.equal('superuser');
+          resolve();
+        });
+      });
+
+      return previous.then(function () {
+        // console.log('Resetting the password');
+        var form = {
+          token: resetToken,
+          password: 'secret',
+          confirmPassword: 'secret'
+        };
+        return user.resetPassword(form);
+      })
+      .then(function() {
+        throw new Error('Validation errors should have been generated');
+      })
+      .catch(function(err) {
+        if(err.validationErrors) {
+          expect(err.validationErrors.password[0]).to.equal('Password must be at least 8 characters');
+        } else {
+          throw err;
+        }
       });
   });
 

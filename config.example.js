@@ -43,7 +43,15 @@ module.exports = {
     emailUsername: false,
     // Custom names for the username and password fields in your sign-in form
     usernameField: 'user',
-    passwordField: 'pass'
+    passwordField: 'pass',
+    // Override default constraints
+    passwordConstraints = {
+      length: {
+        minimum: 6,
+        message: "must be at least 6 characters"
+      },
+      matches: 'confirmPassword'
+    }
   },
   dbServer: {
     // The CouchDB compatible server where all your databases are stored on

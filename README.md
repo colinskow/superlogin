@@ -20,6 +20,7 @@ For issues and feature requests visit the [issue tracker](https://github.com/col
 - [Database Security](#database-security)
 - [CouchDB Document Update Validation](#couchdb-document-update-validation)
 - [Adding Providers](#adding-providers)
+- [Adding additional fields](#adding-additional-fields)
 - [Advanced Configuration](#advanced-configuration)
 - [Routes](#routes)
 - [Event Emitter](#event-emitter)
@@ -240,11 +241,40 @@ You must use Passport strategies that accept `access_token` posted in the body o
 Here is how to setup the Client Access Token strategy:
 
 ```js
-var FacebookTokenStrategy = require('passport-facebook-token').Strategy;
+var FacebookTokenStrategy = require('passport-facebook-token');
 superlogin.registerTokenProvider('facebook', FacebookTokenStrategy);
 ```
 
 Note that this uses the exact settings in your config as the popup window workflow.
+
+## Adding additional fields
+It's easy to add custom fields to user documents. When added to a `profile` field it will automatically be included with the session information (in a profile object).
+
+1. First whitelist the fields in the [config](https://github.com/colinskow/superlogin/blob/master/config.example.js), for example:
+
+   ``` js
+   userModel: {
+      whitelist: ['profile.fullname']
+   }
+   ```
+
+2. Include the fields with [registrations](#post-register).
+3. To also fill in custom fields after social authentications use the [superlogin.onCreate](#superloginoncreatefn) handler. Example:
+
+   ``` js 
+   superlogin.onCreate(function(userDoc, provider) {
+     if(userDoc.profile === undefined) {
+       userDoc.profile = {};
+     }
+     if(provider !== 'local') {
+       const displayName = userDoc[provider].profile.displayName;
+       if (displayName) {
+         userDoc.profile.fullname = displayName;
+       }
+     }
+     return Promise.resolve(userDoc);
+   })
+   ```
 
 ## Advanced Configuration
 
@@ -278,7 +308,9 @@ Authentication required. Logs out and deauthorizes all user sessions except the 
 Authentication required. Logs out every session the user has open and deauthorizes the user completely on all databases.
 
 ##### `POST /forgot-password`
-Sends the forgot password email containing a password reset token. The life of the token can be set under `security.tokenLife` (in seconds).
+Include `email` field to send the forgot password email containing a password reset token. The life of the token can be set under `security.tokenLife` (in seconds). 
+
+Have the email template redirect back to you're app where you're app presents U.I. to gather a new password and then `POST` to `/password-reset` with the forgot-password `token` and new password
 
 ##### `POST /password-reset`
 Resets the password. Required fields: `token`, `password`, and `confirmPassword`.

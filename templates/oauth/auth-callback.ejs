@@ -7,16 +7,39 @@
 </head>
 <body>
 <script type="text/javascript">
-    if (window.opener) {
-        window.opener.focus();
+    (function(){
+
         var session = <%- JSON.stringify(session) %>;
         var error = <%- JSON.stringify(error) %>;
         var link = <%- JSON.stringify(link) %>;
-        if (window.opener.superlogin && window.opener.superlogin.oauthSession) {
-            window.opener.superlogin.oauthSession(error, session, link);
+
+        // Option 1: Listen to messages and respond with login data if requested.
+        window.addEventListener("message", function(ev) {
+            if (ev.data.message === "superlogin-requestResult") {
+                var messageToPost = {
+                    message: "superlogin-deliverResult",
+                    result: {
+                        error: error,
+                        session: session,
+                        link: link
+                    }
+                };
+                console.log("postMessage", messageToPost);
+                // ev.source is the opener
+                ev.source.postMessage(messageToPost, "*");
+            }
+        });
+
+        // Option 2: try to talk directly to opener
+        if (window.opener) {
+            window.opener.focus();
+            if (window.opener.superlogin && window.opener.superlogin.oauthSession) {
+                window.opener.superlogin.oauthSession(error, session, link);
+            }
         }
-    }
-    window.close();
+        window.close();
+    })();
+
 </script>
 </body>
 </html>

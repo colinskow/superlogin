@@ -456,6 +456,11 @@ Creates a new user following authentication from an OAuth provider. If the user 
 * `profile`: the profile supplied by the provider
 * `req`: used just to log the user's ip if supplied
 
+##### `superlogin.updateCustomFields(user_id, params)`
+Updates the user's custom fields listed on whitelist.
+
+* `params`: an object of params to update.
+
 ##### `superlogin.hashPassword(password)`
 Hashes a password using PBKDF2 and returns an object containing `salt` and `derived_key`.
 

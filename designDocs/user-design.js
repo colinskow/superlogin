@@ -4,7 +4,7 @@ module.exports = {
       email: function(doc) {
         if(doc.email) {
           emit(doc.email, null);
-        } else if(doc.unverifiedEmail.email) {
+        } else if(doc.unverifiedEmail && doc.unverifiedEmail.email) {
           emit(doc.unverifiedEmail.email, null);
         }
       },
@@ -20,7 +20,7 @@ module.exports = {
         emit(doc._id, null);
         if(doc.email) {
           emit(doc.email, null);
-        } else if(doc.unverifiedEmail.email) {
+        } else if(doc.unverifiedEmail && doc.unverifiedEmail.email) {
           emit(doc.unverifiedEmail.email, null);
         }
       },

@@ -13,7 +13,7 @@ For issues and feature requests visit the [issue tracker](https://github.com/col
 ## Contents
 
 - [Features](#features)
-- [Client Tools and Demo](#client-tools-and-demo)
+- [AngularJS Tools and Demo](#angularjs-tools-and-demo)
 - [How It Works](#how-it-works)
 - [Quick Start](#quick-start)
 - [Securing Your Routes](#securing-your-routes)
@@ -40,16 +40,13 @@ For issues and feature requests visit the [issue tracker](https://github.com/col
 * Provides seamless token access to both your CouchDB server (or Cloudant) and your private API
 * Manages permissions on an unlimited number of private or shared user databases and seeds them with the correct design documents
 
-## Client Tools and Demo
+## AngularJS Tools and Demo
 
 * [NG-SuperLogin](https://github.com/colinskow/ng-superlogin)
    Helps you easily integrate a SuperLogin backend into your single page AngularJS applications.
 
 * [SuperLogin Demo](https://github.com/colinskow/superlogin-demo)
    A full-stack demo of how to integrate SuperLogin and Express with AngularJS and CouchDB.
-
-* [SuperLogin-client](https://github.com/micky2be/superlogin-client)
-   Helps you easily integrate a SuperLogin backend into your Javascript applications.
 
 ## How It Works
 

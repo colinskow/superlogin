@@ -47,7 +47,8 @@ var userConfig = new Configure({
   },
   security: {
     defaultRoles: ['user'],
-    userActivityLogSize: 3
+    userActivityLogSize: 3,
+    defaultUserAccess: ["sync"]
   },
   local: {
     sendConfirmEmail: true,
@@ -83,7 +84,8 @@ var userConfig = new Configure({
     publicURL: 'https://mydb.example.com'
   },
   session: {
-    adapter: 'memory'
+    adapter: 'memory',
+    checkUserDBsDiffFromDefault : true
   },
   userDBs: {
     defaultSecurityRoles: {
@@ -93,7 +95,8 @@ var userConfig = new Configure({
     model: {
       _default: {
         designDocs: ['test'],
-        permissions: ['_reader', '_writer', '_replicator']
+        permissions: ['_reader', '_writer', '_replicator'],
+        requireUserAccess: ["sync"]
       }
     },
     defaultDBs: {
@@ -244,7 +247,7 @@ describe('User Model', function() {
       });
   });
 
-  var sessionKey, sessionPass, firstExpires;
+  var sessionKey, sessionPass, firstExpires, sessionUserDBs;
 
   it('should generate a new session for the user', function() {
     var emitterPromise = new BPromise(function(resolve) {
@@ -266,6 +269,8 @@ describe('User Model', function() {
         expect(sessionKey).to.be.a('string');
         expect(result.userDBs.usertest).to.equal('https://' + sessionKey + ':' + sessionPass + '@' +
           'mydb.example.com/test_usertest$superuser');
+
+        sessionUserDBs = result.userDBs;
         return(userDB.get(testUserForm.username));
       })
       .then(function(user) {
@@ -283,6 +288,46 @@ describe('User Model', function() {
       })
       .then(function(secDoc) {
         expect(secDoc.members.names.length).to.equal(1);
+      });
+  });
+
+  it('should have allowed and included "usertest" into session.userDBs with the defaultUserAccess', function() {
+    return previous
+      .then(function() {
+          expect(sessionUserDBs).to.have.property("usertest");
+      });
+  });
+
+  it("should NOT have allowed and included 'usertest' into session.userDBs when user.access is modified to ['none']", function() {
+    var previous_access = null;
+    var testAccessSession = null;
+    return previous.then(function() {
+      //console.log('Fetching the user');
+      return userDB.get(testUserForm.username);
+    })
+    .then(function(testUser) {
+        //console.log("Modifying the user's access to ['none']");
+        previous_access = testUser.access;
+        testUser.access = ["none"];
+        return userDB.put(testUser);
+      })
+      .then(function(result) {
+        //console.log("After updated access, Create a session");
+        return user.createSession(testUserForm.username, 'local', req);
+      })
+      .then(function(result) {
+          //console.log("Session created");
+          testAccessSession = result;
+          return userDB.get(testUserForm.username);
+      })
+      .then(function(nUser){
+        //console.log("Restore User's original Access");
+        nUser.access = previous_access;
+        return userDB.put(nUser);
+      })
+      .then(function(userData)
+      {
+        expect(testAccessSession.userDBs).to.not.have.property("usertest");
       });
   });
 
@@ -757,6 +802,48 @@ describe('User Model', function() {
       });
   });
 
+  it("on user's session creation, it should refresh personalDBs if the defaultDBs change", function() {
+    var randomDBName = null;
+    var testSession = null;
+    var previousPersonalsSignature = null;
+    return previous.then(function() {
+      //console.log('Fetching the user');
+      return userDB.get(testUserForm.username);
+    })
+      .then(function(result) {
+      previousPersonalsSignature = result.privateDBsSignature;
+      randomDBName = Date.now()+ "p";
+      userConfig.getItem("userDBs.defaultDBs.private").push(randomDBName);
+      userConfig.refreshSignature("userDBs.defaultDBs.private");
+      //console.log("After added a random personalDB, Create a session ", randomDBName);
+      return user.createSession(testUserForm.username, 'local', req);
+    })
+    .then(function(result) {
+          //console.log("Session created", result);
+          testSession = result;
+          expect(testSession.userDBs).to.have.property(randomDBName);
+          return userDB.get(testUserForm.username);
+    })
+    .then(function(newUser){
+          expect(newUser.privateDBsSignature).to.not.equals(previousPersonalsSignature);
+          //Now restore the old privates
+          var privateDefaultDBs = userConfig.getItem("userDBs.defaultDBs.private");
+          privateDefaultDBs.splice( privateDefaultDBs.indexOf(randomDBName), 1 );
+          userConfig.refreshSignature("userDBs.defaultDBs.private");
+          return user.createSession(testUserForm.username, 'local', req);
+    })
+    .then(function(newSession)
+    {
+      //Now that the random has been removed, it should not more appear in userDBs
+      expect(newSession.userDBs).to.not.have.property(randomDBName);
+      return userDB.get(testUserForm.username);
+    })
+    .then(function(newUser){
+      //console.log("Test signature difference, to know if the function well update the user");
+      expect(newUser.privateDBsSignature).to.equals(previousPersonalsSignature);
+    });
+  });
+
   it('should add a new user database', function() {
     return previous
       .then(function() {
@@ -848,6 +935,7 @@ describe('User Model', function() {
         }
       });
   });
+
 
   function checkDBExists(dbname) {
     var finalUrl = dbUrl + '/' + dbname;

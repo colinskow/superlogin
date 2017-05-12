@@ -190,6 +190,19 @@ SuperLogin also allows you to specify default `_security` roles for members and 
 
 CouchDB can save your API a lot of traffic by handling both reads and writes. CouchDB provides the [validate_doc_update function](http://guide.couchdb.org/draft/validation.html) to approve or disapprove what gets written. However, since your CouchDB users are temporary random API keys, you have no idea which user is requesting to write. SuperLogin has inserted the original `user_id` into `userCtx.roles[0]`, prefixed by `user:` (e.g. `user:superman`).
 
+Example design doc:
+``` js
+module.exports = {
+  validator: {
+    validate_doc_update: function (newDoc, oldDoc, userCtx) {
+      if (!newDoc.name) {
+        throw({forbidden: 'doc.name is required'});
+      }
+    }.toString()
+  }
+};
+```
+
 If you are using Cloudant authentication, the prefixed `user_id` is inserted as the first item on the `permissions` array, which will also appear inside `roles` in your `userCtx` object. You will also find all the `roles` from your user doc here.
 
 If you wish to give a user special Cloudant permissions other than the ones specified in your config, you can edit the user doc from the `sl-users` database and under `personalDBs` add an array called `permissions` under the corresponding DB for that user.

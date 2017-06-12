@@ -34,7 +34,7 @@
   "homepage": "https://github.com/colinskow/superlogin",
   "dependencies": {
     "bluebird": "^3.3.4",
-    "couch-pwd": "0.0.1",
+    "couch-pwd": "github:zeMirco/couch-pwd",
     "ejs": "^2.3.1",
     "express": "^4.13.3",
     "extend": "^3.0.0",

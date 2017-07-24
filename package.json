@@ -44,7 +44,7 @@
     "passport": "^0.3.2",
     "passport-http-bearer-sl": "^1.0.1",
     "passport-local": "^1.0.0",
-    "pouchdb": "~5.3.1",
+    "pouchdb": "~6.3.4",
     "pouchdb-seed-design": "^0.2.0",
     "redis": "^2.5.2",
     "sofa-model": "^0.2.0",

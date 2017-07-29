@@ -45,7 +45,7 @@ module.exports = {
     usernameField: 'user',
     passwordField: 'pass',
     // Override default constraints
-    passwordConstraints = {
+    passwordConstraints: {
       length: {
         minimum: 6,
         message: "must be at least 6 characters"

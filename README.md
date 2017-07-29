@@ -363,7 +363,6 @@ Here is a full list of the events that SuperLogin emits, and parameters provided
 - `signup`: (`userDoc`, `provider`)
 - `login`: (`newSession`, `provider`)
 - `refresh`: (`newSession`)
-- `signup`: (`userDoc`, `provider`)
 - `password-reset`: (`userDoc`)
 - `password-change`: (`userDoc`)
 - `forgot-password`: (`userDoc`)

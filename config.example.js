@@ -41,6 +41,9 @@ module.exports = {
     confirmEmailRedirectURL: '/',
     // Set this to true to disable usernames and use emails instead
     emailUsername: false,
+    // If this is more then zero a random ID of that length will be used in place of the username. This number must
+    // be even and must be big enough to allow it to be unique. I would suggest at least 16.
+    randomUIDLength: 0,
     // Custom names for the username and password fields in your sign-in form
     usernameField: 'user',
     passwordField: 'pass',

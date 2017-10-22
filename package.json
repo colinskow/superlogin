@@ -1,11 +1,11 @@
 {
-  "name": "superlogin",
-  "version": "0.6.1",
+  "name": "superlogin-jwt",
+  "version": "0.0.1",
   "description": "Powerful authentication for APIs and single page apps using the CouchDB ecosystem which supports a variety of providers.",
   "main": "./lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/colinskow/superlogin.git"
+    "url": "https://github.com/SteffenDE/superlogin-jwt.git"
   },
   "engines": {
     "node": ">=4.0.0"
@@ -26,29 +26,30 @@
     "Node",
     "Express"
   ],
-  "author": "Colin Skow",
+  "author": "Steffen Deusch",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/colinskow/superlogin/issues"
+    "url": "https://github.com/SteffenDE/superlogin-jwt/issues"
   },
-  "homepage": "https://github.com/colinskow/superlogin",
+  "homepage": "https://github.com/SteffenDE/superlogin-jwt",
   "dependencies": {
-    "bluebird": "^3.5.0",
+    "axios": "^0.16.2",
+    "bluebird": "^3.5.1",
     "couch-pwd": "github:zeMirco/couch-pwd",
     "ejs": "^2.5.7",
-    "express": "^4.15.5",
+    "express": "^4.16.2",
     "extend": "^3.0.1",
     "fs-extra": "^4.0.2",
-    "nodemailer": "^4.1.1",
+    "jsonwebtoken": "^8.1.0",
+    "lodash": "^4.17.4",
+    "nodemailer": "^4.2.0",
     "nodemailer-stub-transport": "^1.1.0",
     "passport": "^0.4.0",
     "passport-http-bearer-sl": "^1.0.4",
     "passport-local": "^1.0.0",
-    "pouchdb": "~6.3.4",
     "pouchdb-seed-design": "^0.3.0",
-    "redis": "^2.8.0",
     "sofa-model": "^0.2.0",
-    "superagent": "^3.6.0",
+    "superagent": "^3.6.3",
     "urlsafe-base64": "1.0.0",
     "uuid": "^3.1.0"
   },
@@ -60,10 +61,10 @@
     "gulp-mocha": "^4.3.1",
     "jshint": "^2.9.5",
     "jshint-stylish": "^2.2.1",
-    "mocha": "^3.5.3",
+    "mocha": "^4.0.1",
     "morgan": "^1.9.0",
     "rimraf": "^2.6.2",
-    "sinon": "^4.0.0",
-    "sinon-chai": "^2.13.0"
+    "sinon": "^4.0.1",
+    "sinon-chai": "^2.14.0"
   }
 }

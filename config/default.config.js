@@ -5,9 +5,9 @@ module.exports = {
   security: {
     defaultRoles: ['user'],
     maxFailedLogins: 4,
-    lockoutTime: 300,
-    sessionLife: 86400,
-    tokenLife: 86400,
+    lockoutTime: "5m",
+    sessionLife: "1d",
+    tokenLife: "1d",
     loginOnRegistration: false,
     loginOnPasswordReset: false
   },

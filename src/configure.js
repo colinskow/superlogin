@@ -1,7 +1,6 @@
-"use strict";
-var util = require("./util");
+import util from "./util";
 
-module.exports = function(data, defaults) {
+export default function(data, defaults) {
   this.config = data || {};
   this.defaults = defaults || {};
 

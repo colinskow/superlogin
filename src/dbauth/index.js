@@ -1,11 +1,10 @@
-"use strict";
-var BPromise = require("bluebird");
-var axiosDB = require("axiosdb");
-var util = require("./../util");
-var axios = require("axios");
-var seed = require("pouchdb-seed-design");
+import BPromise from "bluebird";
+import axiosDB from "axiosdb";
+import util from "./../util";
+import axios from "axios";
+import seed from "pouchdb-seed-design";
 
-module.exports = function(config, userDB, couchAuthDB) {
+export default function(config, userDB, couchAuthDB) {
   var adapter;
 
   var CouchAdapter = require("./couchdb");

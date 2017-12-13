@@ -1,8 +1,7 @@
-"use strict";
-var BPromise = require("bluebird");
-var util = require("../util");
+import BPromise from "bluebird";
+import util from "../util";
 
-module.exports = function(couchAuthDB) {
+export default function(couchAuthDB) {
   this.storeKey = function(username, key, password, expires, roles) {
     if (roles instanceof Array) {
       // Clone roles to not overwrite original

@@ -1,6 +1,6 @@
 {
   "name": "superlogin-jwt",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Powerful authentication for APIs and single page apps using the CouchDB ecosystem which supports a variety of providers.",
   "main": "./lib/index.js",
   "scripts": {

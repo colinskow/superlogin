@@ -1,5 +1,5 @@
 import BPromise from "bluebird";
-import util from "../util";
+import * as util from "../util";
 
 export default function(couchAuthDB) {
   this.storeKey = function(username, key, password, expires, roles) {

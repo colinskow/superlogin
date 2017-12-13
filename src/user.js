@@ -613,7 +613,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     newSession.dbUser = newToken.key;
     newSession.dbPass = password;
     newSession.dbExpires = newToken.expires;
-    newSession.userId = user._id;
+    newSession.user_id = user._id;
     newSession.roles = user.roles;
     // Inject the list of userDBs
     if (typeof user.personalDBs === "object") {
@@ -755,7 +755,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       newSession.dbUser = jwt_.payload.dbUser;
       newSession.dbPass = jwt_.payload.dbPass;
       newSession.dbExpires = jwt_.payload.dbExpires;
-      newSession.userId = user._id;
+      newSession.user_id = user._id;
       newSession.roles = user.roles;
       // Inject the list of userDBs
       if (typeof user.personalDBs === "object") {
@@ -1127,7 +1127,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     }).then(result => {
       if (userId) {
         return result.rows.filter(i => {
-          return i.doc.userId === userId && i.doc.expires < Math.floor(Date.now() / 1000);
+          return i.doc.user_id === userId && i.doc.expires < Math.floor(Date.now() / 1000);
         }).map(i => i.doc.name);
       }
       return result.rows.filter(i => {

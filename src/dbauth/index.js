@@ -1,6 +1,6 @@
 import BPromise from "bluebird";
 import axiosDB from "axiosdb";
-import util from "./../util";
+import * as util from "./../util";
 import axios from "axios";
 import seed from "pouchdb-seed-design";
 

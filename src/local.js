@@ -1,6 +1,7 @@
 import * as util from "./util";
 import LocalStrategy from "passport-local";
 import { Strategy as BearerStrategy } from "passport-http-bearer-sl";
+import ms from "ms";
 
 export default function(config, passport, user) {
   // API token strategy
@@ -12,7 +13,7 @@ export default function(config, passport, user) {
         const theuser = await user.confirmSession(token);
         done(null, theuser);
       }
-      catch(err) {
+      catch (err) {
         if (err instanceof Error && err.message !== "jwt expired") {
           done(err, false);
         }
@@ -63,7 +64,7 @@ export default function(config, passport, user) {
             // Success!!!
             return done(null, theuser);
           }
-          catch(err) {
+          catch (err) {
             if (!err) {
               // Password didn't authenticate
               return handleFailedLogin(theuser, req, done);
@@ -82,12 +83,12 @@ export default function(config, passport, user) {
           });
         }
       }
-      catch(err) {
+      catch (err) {
         // Database threw an error
         return done(err);
       }
     }
-  ));
+    ));
 
   async function handleFailedLogin(userDoc, req, done) {
     const invalid = {
@@ -97,7 +98,7 @@ export default function(config, passport, user) {
     const locked = await user.handleFailedLogin(userDoc, req);
     if (locked) {
       let securityLockoutTime = config.getItem("security.lockoutTime");
-      let time = typeof securityLockoutTime === "string" ? ms(securityLockoutTime) : securityLockoutTime;
+      securityLockoutTime = typeof securityLockoutTime === "string" ? ms(securityLockoutTime) : securityLockoutTime;
       invalid.message = "Maximum failed login attempts exceeded. Your account has been locked for " +
           ms(securityLockoutTime);
     }

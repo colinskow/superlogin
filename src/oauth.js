@@ -1,8 +1,6 @@
 import fs from "fs";
 import path from "path";
-import BPromise from "bluebird";
 import ejs from "ejs";
-import { _extend as extend } from "util";
 import * as util from "./util";
 
 var stateRequired = ["google", "linkedin"];
@@ -28,7 +26,7 @@ export default function(router, passport, user, config) {
       var html = ejs.render(template, results);
       res.status(200).send(html);
     }
-    catch(err) {
+    catch (err) {
       return next(err);
     }
   }
@@ -37,10 +35,10 @@ export default function(router, passport, user, config) {
   async function initTokenSession(req, res, next) {
     var provider = getProviderToken(req.path);
     try {
-      const mySession = await user.createSession(provider, req)
+      const session = await user.createSession(provider, req);
       res.status(200).json(session);
     }
-    catch(err) {
+    catch (err) {
       return next(err);
     }
   }
@@ -117,7 +115,7 @@ export default function(router, passport, user, config) {
       var credentials = config.getItem(configRef + ".credentials");
       credentials.passReqToCallback = true;
       var options = config.getItem(configRef + ".options") || {};
-      configFunction.call(null, credentials, passport, authHandler);
+      configFunction(credentials, passport, authHandler);
       // register provider routes
       router.get(
         "/" + provider,
@@ -154,7 +152,7 @@ export default function(router, passport, user, config) {
   function registerOAuth2(providerName, Strategy) {
     registerProvider(providerName, (credentials, passport, authHandler) => {
       passport.use(new Strategy(credentials,
-        async (req, accessToken, refreshToken, profile, done) => {
+        async(req, accessToken, refreshToken, profile, done) => {
           try {
             const res = await authHandler(
               req,
@@ -186,7 +184,7 @@ export default function(router, passport, user, config) {
       var options = config.getItem(configRef + ".options") || {};
       // Configure the Passport Strategy
       passport.use(providerName + "-token", new Strategy(credentials,
-        async (req, accessToken, refreshToken, profile, done) => {
+        async(req, accessToken, refreshToken, profile, done) => {
           try {
             const res = await authHandler(
               req,
@@ -239,7 +237,7 @@ export default function(router, passport, user, config) {
   function passportCallback(provider, options, operation) {
     // console.log(provider, options, operation);
     return (req, res, next) => {
-      var theOptions = extend({}, options);
+      var theOptions = Object.assign({}, options);
       if (provider === "linkedin") {
         theOptions.state = true;
       }
@@ -256,7 +254,7 @@ export default function(router, passport, user, config) {
   // Configures the passport.authenticate for the given access_token provider, passing in options
   function passportTokenCallback(provider, options) {
     return (req, res, next) => {
-      var theOptions = extend({}, options);
+      var theOptions = Object.assign({}, options);
       theOptions.session = false;
       passport.authenticate(provider + "-token", theOptions)(req, res, next);
     };

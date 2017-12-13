@@ -1,5 +1,4 @@
 import * as util from "./util";
-import jwt from "jsonwebtoken";
 
 export default function(config, router, passport, user) {
   const env = process.env.NODE_ENV || "development";
@@ -28,7 +27,7 @@ export default function(config, router, passport, user) {
       const mySession = await user.createSession("local", req, true);
       res.status(200).json(mySession);
     }
-    catch(err) {
+    catch (err) {
       return next(err);
     }
   });
@@ -39,7 +38,7 @@ export default function(config, router, passport, user) {
         const mySession = await user.refreshSession(req);
         res.status(200).json(mySession);
       }
-      catch(err) {
+      catch (err) {
         return next(err);
       }
     }
@@ -54,7 +53,7 @@ export default function(config, router, passport, user) {
           success: "Logged out"
         });
       }
-      catch(err) {
+      catch (err) {
         console.error("Logout failed");
         return next(err);
       }
@@ -71,7 +70,7 @@ export default function(config, router, passport, user) {
           success: "Other sessions logged out"
         });
       }
-      catch(err) {
+      catch (err) {
         console.error("Logout failed");
         return next(err);
       }
@@ -81,10 +80,10 @@ export default function(config, router, passport, user) {
   router.post("/logout-all", passport.authenticate("bearer", { session: false }),
     async function(req, res, next) {
       try {
-        await user.logoutUser(req.user)
+        await user.logoutUser(req.user);
         res.status(200).json({success: "Logged out"});
       }
-      catch(err) {
+      catch (err) {
         console.error("Logout-all failed");
         return next(err);
       }
@@ -102,7 +101,7 @@ export default function(config, router, passport, user) {
           const mySession = await user.createSession("local", req, true);
           res.status(200).json(mySession);
         }
-        catch(err) {
+        catch (err) {
           return next(err);
         }
       }
@@ -113,30 +112,30 @@ export default function(config, router, passport, user) {
         });
       }
     }
-    catch(err) {
+    catch (err) {
       return next(err);
     }
   });
 
   router.post("/forgot-password", async function(req, res, next) {
     try {
-      await user.forgotPassword(req.body.email, req)
+      await user.forgotPassword(req.body.email, req);
       res.status(200).json({success: "Password recovery email sent."});
     }
-    catch(err) {
+    catch (err) {
       return next(err);
     }
   });
 
   router.post("/password-reset", async function(req, res, next) {
     try {
-      const currentUser = await user.resetPassword(req.body, req);
+      await user.resetPassword(req.body, req);
       if (config.getItem("security.loginOnPasswordReset")) {
         try {
           const mySession = await user.createSession("local", req);
           res.status(200).json(mySession);
         }
-        catch(err) {
+        catch (err) {
           return next(err);
         }
       }
@@ -144,7 +143,7 @@ export default function(config, router, passport, user) {
         res.status(200).json({success: "Password successfully reset."});
       }
     }
-    catch(err) {
+    catch (err) {
       return next(err);
     }
   });
@@ -155,7 +154,7 @@ export default function(config, router, passport, user) {
         await user.changePasswordSecure(req.user._id, req.body, req);
         res.status(200).json({success: "password changed"});
       }
-      catch(err) {
+      catch (err) {
         return next(err);
       }
     }
@@ -165,12 +164,12 @@ export default function(config, router, passport, user) {
     async function(req, res, next) {
       const provider = req.params.provider;
       try {
-        await user.unlink(req.user._id, provider)
+        await user.unlink(req.user._id, provider);
         res.status(200).json({
           success: util.capitalizeFirstLetter(provider) + " unlinked"
         });
       }
-      catch(err) {
+      catch (err) {
         return next(err);
       }
     }
@@ -192,7 +191,7 @@ export default function(config, router, passport, user) {
       }
       res.status(200).send({ok: true, success: "Email verified"});
     }
-    catch(err) {
+    catch (err) {
       if (redirectURL) {
         var query = "?error=" + encodeURIComponent(err.error);
         if (err.message) {
@@ -221,7 +220,7 @@ export default function(config, router, passport, user) {
         res.status(409).json({error: "Username already in use"});
       }
     }
-    catch(err) {
+    catch (err) {
       return next(err);
     }
   });
@@ -231,11 +230,12 @@ export default function(config, router, passport, user) {
       return next({error: "Email required", status: 400});
     }
     try {
+      let err;
       if (config.getItem("local.emailUsername")) {
-        const err = await user.validateEmailUsername(req.params.email);
+        err = await user.validateEmailUsername(req.params.email);
       }
       else {
-        const err = await user.validateEmail(req.params.email);
+        err = await user.validateEmail(req.params.email);
       }
       if (!err) {
         res.status(200).json({ok: true});
@@ -244,7 +244,7 @@ export default function(config, router, passport, user) {
         res.status(409).json({error: "Email already in use"});
       }
     }
-    catch(err) {
+    catch (err) {
       return next(err);
     }
   });
@@ -255,7 +255,7 @@ export default function(config, router, passport, user) {
         await user.changeEmail(req.user._id, req.body.newEmail, req);
         res.status(200).json({ok: true, success: "Email changed"});
       }
-      catch(err) {
+      catch (err) {
         return next(err);
       }
     }

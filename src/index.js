@@ -13,7 +13,7 @@ import Mailer from "./mailer";
 import * as util from "./util";
 import seed from "pouchdb-seed-design";
 
-export default class SuperLogin {
+export default class {
   constructor(configData, passport, userDB, couchAuthDB) {
     var config = new Configure(configData, require("../config/default.config"));
     var router = express.Router();
@@ -32,9 +32,11 @@ export default class SuperLogin {
 
     // Create the DBs if they weren't passed in
     if (!userDB && config.getItem("dbServer.userDB")) {
+      // eslint-disable-next-line
       userDB = new axiosDB(util.getFullDBURL(config.getItem("dbServer"), config.getItem("dbServer.userDB")));
     }
     if (!couchAuthDB && config.getItem("dbServer.couchAuthDB")) {
+      // eslint-disable-next-line
       couchAuthDB = new axiosDB(util.getFullDBURL(config.getItem("dbServer"), config.getItem("dbServer.couchAuthDB")));
     }
     if (!userDB || typeof userDB !== "object") {

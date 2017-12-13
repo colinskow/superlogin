@@ -4,10 +4,8 @@ import nodemailer from "nodemailer";
 import ejs from "ejs";
 
 export default class {
-
   constructor(config) {
     // Initialize the transport mechanism with nodermailer
-    let transporter;
     this.config = config;
     const customTransport = config.getItem("mailer.transport");
     if (config.getItem("testMode.noEmail")) {
@@ -53,5 +51,4 @@ export default class {
     var sendEmail = BPromise.promisify(this.transporter.sendMail, {context: this.transporter});
     return sendEmail(mailOptions);
   };
-
 };

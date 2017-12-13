@@ -1,7 +1,6 @@
 import url from "url";
 import BPromise from "bluebird";
 import Model from "sofa-model";
-import nodemailer from "nodemailer";
 import * as util from "./util";
 import DBAuth from "./dbauth";
 import _ from "lodash";
@@ -10,24 +9,24 @@ import uuidv4 from "uuid/v4";
 import ms from "ms";
 
 // regexp from https://github.com/angular/angular.js/blob/master/src/ng/directive/input.js#L4
-var EMAIL_REGEXP = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/;
-var USER_REGEXP = /^[a-z0-9_-]{3,16}$/;
+let EMAIL_REGEXP = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/;
+let USER_REGEXP = /^[a-z0-9_-]{3,16}$/;
 
 export default function(config, userDB, couchAuthDB, mailer, emitter) {
-  var self = this;
-  var dbAuth = new DBAuth(config, userDB, couchAuthDB);
-  var onCreateActions = [];
-  var onLinkActions = [];
+  let self = this;
+  let dbAuth = new DBAuth(config, userDB, couchAuthDB);
+  let onCreateActions = [];
+  let onLinkActions = [];
 
   // Token valid for 24 hours by default
   // Forget password token life
-  var tokenLife = config.getItem("security.tokenLife");
+  let tokenLife = config.getItem("security.tokenLife");
   tokenLife = typeof tokenLife === "string" ? ms(tokenLife) : tokenLife || ms("1h");
   // Session token life
-  var sessionLife = config.getItem("security.sessionLife");
+  let sessionLife = config.getItem("security.sessionLife");
   sessionLife = typeof sessionLife === "string" ? ms(sessionLife) : sessionLife || ms("15m");
 
-  var emailUsername = config.getItem("local.emailUsername");
+  let emailUsername = config.getItem("local.emailUsername");
 
   this.validateUsername = async function(username) {
     if (!username) {
@@ -39,7 +38,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     const result = await userDB.query("auth/username", { key: username });
     if (result.rows.length === 0) {
       // Pass!
-      return;
+
     }
     else {
       return "already in use";
@@ -53,10 +52,10 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     if (!email.match(EMAIL_REGEXP)) {
       return;
     }
-    const result = await userDB.query("auth/email", { key: email })
+    const result = await userDB.query("auth/email", { key: email });
     if (result.rows.length === 0) {
       // Pass!
-      return;
+
     }
     else {
       return "already in use";
@@ -70,9 +69,9 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     if (!email.match(EMAIL_REGEXP)) {
       return "invalid email";
     }
-    const result = await userDB.query("auth/emailUsername", { key: email })
+    const result = await userDB.query("auth/emailUsername", { key: email });
     if (result.rows.length === 0) {
-      return;
+
     }
     else {
       return "already in use";
@@ -86,7 +85,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     }
   };
 
-  var passwordConstraints = {
+  let passwordConstraints = {
     presence: true,
     length: {
       minimum: 6,
@@ -97,7 +96,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
 
   passwordConstraints = _.merge({}, passwordConstraints, config.getItem("local.passwordConstraints"));
 
-  var userModel = {
+  let userModel = {
     async: true,
     whitelist: [
       "name",
@@ -148,7 +147,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     userModel.validate.email.validateEmailUsername = true;
   }
 
-  var resetPasswordModel = {
+  let resetPasswordModel = {
     async: true,
     customValidators: {
       matches: self.matches
@@ -164,7 +163,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     }
   };
 
-  var changePasswordModel = {
+  let changePasswordModel = {
     async: true,
     customValidators: {
       matches: self.matches
@@ -196,17 +195,17 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
   };
 
   function processTransformations(fnArray, userDoc, provider) {
-    var promise;
+    let promise;
     fnArray.forEach(function(fn) {
       if (!promise) {
-        promise = fn.call(null, userDoc, provider);
+        promise = fn(null, userDoc, provider);
       }
       else {
         if (!promise.then || typeof promise.then !== "function") {
           throw new Error("onCreate function must return a promise");
         }
         promise.then(function(newUserDoc) {
-          return fn.call(null, newUserDoc, provider);
+          return fn(null, newUserDoc, provider);
         });
       }
     });
@@ -217,7 +216,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
   }
 
   this.get = async function(login) {
-    var query;
+    let query;
     if (emailUsername) {
       query = "emailUsername";
     }
@@ -238,22 +237,23 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
 
   this.create = async function(form, req) {
     req = req || {};
-    var finalUserModel = userModel;
-    var newUserModel = config.getItem("userModel");
+    let newUser;
+    let finalUserModel = userModel;
+    let newUserModel = config.getItem("userModel");
     if (typeof newUserModel === "object") {
-      var whitelist;
+      let whitelist;
       if (newUserModel.whitelist) {
         whitelist = util.arrayUnion(userModel.whitelist, newUserModel.whitelist);
       }
       finalUserModel = _.merge({}, userModel, config.getItem("userModel"));
       finalUserModel.whitelist = whitelist || finalUserModel.whitelist;
     }
-    var UserModel = new Model(finalUserModel);
-    var user = new UserModel(form);
+    let UserModel = new Model(finalUserModel);
+    let user = new UserModel(form);
     try {
-      const newUser = await user.process();
+      newUser = await user.process();
     }
-    catch(err) {
+    catch (err) {
       return new Error({
         error: "Validation failed",
         validationErrors: err,
@@ -282,7 +282,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       timestamp: new Date().toISOString(),
       ip: req.ip
     };
-    const newUser = await addUserDBs(newUser);
+    await addUserDBs(newUser);
     await self.logActivity(newUser._id, "signup", "local", req, newUser);
     await processTransformations(onCreateActions, newUser, "local");
     const result = await userDB.put(newUser);
@@ -300,11 +300,11 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     //    roles: [],
     //    createPersonalDBs: bool
     // }
-    var req = {};
+    let req = {};
     // declare id, generate random one if none is specified
-    var user_id;
+    let userId;
     // same applies to password
-    var password;
+    let password;
     let manualModel = {
       type: "user",
       roles: options.roles || [],
@@ -323,25 +323,28 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     // start Promise-chain
     if (!options.username) {
       // generate a valid username
-      var user_id = util.URLSafeUUID();
+      userId = util.URLSafeUUID();
       // Make sure our token doesn't start with illegal characters
-      while (token[0] === "_" || token[0] === "-") {
-        user_id = util.URLSafeUUID();
+      while (userId[0] === "_" || userId[0] === "-") {
+        userId = util.URLSafeUUID();
       }
       // we just generated a valid username
       // no need to check later
     }
     else {
       // use to specified username
-      user_id = options.username;
-      await self.validateUsername(user_id);
+      userId = options.username;
+      await self.validateUsername(userId);
     }
     // if no password is specified, generate one
     if (!password) password = util.URLSafeUUID();
-    if (!user_id) {
-      reject("Username must not be empty.");
+    if (!userId) {
+      throw new Error({
+        error: "Username must not be empty.",
+        status: 400
+      });
     }
-    manualModel._id = user_id;
+    manualModel._id = userId;
     // username is valid, generate password hash
     const hash = await util.hashPassword(password);
     manualModel.local.salt = hash.salt;
@@ -358,15 +361,15 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     }
     emitter.emit("signup", manualModel, "local");
     return manualModel;
-  }
+  };
 
   this.socialAuth = async function(provider, auth, profile, req) {
-    var user;
-    var newAccount = false;
-    var action;
-    var baseUsername;
+    let user;
+    let newAccount = false;
+    let action;
+    let baseUsername;
     req = req || {};
-    var ip = req.ip;
+    let ip = req.ip;
     // It is important that we return a Bluebird promise so oauth.js can call .nodeify()
     const results = await userDB.query("auth/" + provider, { key: profile.id, include_docs: true });
     if (results.rows.length > 0) {
@@ -387,7 +390,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
         timestamp: new Date().toISOString(),
         ip: ip
       };
-      var emailFail = function() {
+      let emailFail = function() {
         throw new Error({
           error: "Email already in use",
           message: "Your email is already in use. Try signing in first and then linking this account.",
@@ -403,7 +406,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
             status: 400
           });
         }
-        const err = await self.validateEmailUsername(user.email)
+        const err = await self.validateEmailUsername(user.email);
         if (err) {
           return emailFail();
         }
@@ -416,7 +419,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
         else {
           // If a username isn't specified we'll take it from the email
           if (user.email) {
-            var parseEmail = user.email.split("@");
+            let parseEmail = user.email.split("@");
             baseUsername = parseEmail[0].toLowerCase();
           }
           else if (profile.displayName) {
@@ -456,12 +459,12 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     return user;
   };
 
-  this.linkSocial = async function(user_id, provider, auth, profile, req) {
+  this.linkSocial = async function(userId, provider, auth, profile, req) {
     req = req || {};
     // Load user doc
     const results = await userDB.query("auth/" + provider, { key: profile.id });
     if (results.rows.length > 0) {
-      if (results.rows[0].id !== user_id) {
+      if (results.rows[0].id !== userId) {
         throw new Error({
           error: "Conflict",
           message: "This " + provider + " profile is already in use by another account.",
@@ -469,7 +472,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
         });
       }
     }
-    const user = await userDB.get(user_id);
+    const user = await userDB.get(userId);
     // Check for conflicting provider
     if (user[provider] && (user[provider].profile.id !== profile.id)) {
       throw new Error({
@@ -489,14 +492,14 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     else {
       emailRes = await userDB.query("auth/email", {key: profile.emails[0].value});
     }
-    var passed;
+    let passed;
     if (emailRes.rows.length === 0) {
       passed = true;
     }
     else {
       passed = true;
       emailRes.rows.forEach(function(row) {
-        if (row.id !== user_id) {
+        if (row.id !== userId) {
           passed = false;
         }
       });
@@ -523,13 +526,13 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     }
     delete user[provider].profile._raw;
     await self.logActivity(user._id, "link", provider, req, user);
-    await processTransformations(onLinkActions, userDoc, provider);
+    await processTransformations(onLinkActions, user, provider);
     await userDB.put(user);
     return user;
   };
 
-  this.unlink = async function(user_id, provider) {
-    const user = await userDB.get(user_id);
+  this.unlink = async function(userId, provider) {
+    const user = await userDB.get(userId);
     if (!provider) {
       throw new Error({
         error: "Unlink failed",
@@ -576,9 +579,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     const newSession = {};
     let password;
     let jwtoken;
-    let payload;
     req = req || {};
-    const ip = req.ip;
     const newToken = await generateSession(user._id, user.roles);
     // console.log("generated session", Date.now());
     password = newToken.password;
@@ -593,7 +594,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     }
     await self.logActivity(user._id, "login", provider, req, user);
     // console.log("logged out sessions", Date.now());
-    if (JSON.stringify(user) != JSON.stringify(origUser)) {
+    if (JSON.stringify(user) !== JSON.stringify(origUser)) {
       await userDB.put(user);
     }
     // console.log("putted final user", Date.now());
@@ -612,14 +613,14 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     newSession.dbUser = newToken.key;
     newSession.dbPass = password;
     newSession.dbExpires = newToken.expires;
-    newSession.user_id = user._id;
+    newSession.userId = user._id;
     newSession.roles = user.roles;
     // Inject the list of userDBs
     if (typeof user.personalDBs === "object") {
-      var userDBs = {};
-      var publicURL;
+      let userDBs = {};
+      let publicURL;
       if (config.getItem("dbServer.publicURL")) {
-        var dbObj = url.parse(config.getItem("dbServer.publicURL"));
+        let dbObj = url.parse(config.getItem("dbServer.publicURL"));
         publicURL = dbObj.format();
       }
       else {
@@ -639,7 +640,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
 
   this.handleFailedLogin = async function(user, req) {
     req = req || {};
-    var maxFailedLogins = config.getItem("security.maxFailedLogins");
+    let maxFailedLogins = config.getItem("security.maxFailedLogins");
     if (!maxFailedLogins) {
       return BPromise.resolve();
     }
@@ -657,27 +658,25 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       user.local.lockedUntil = Date.now() + lockoutTime * 1000;
     }
     await self.logActivity(user._id, "failed login", "local", req, user);
-    await userDB.put(finalUser);
+    await userDB.put(user);
     return !!user.local.lockedUntil;
   };
 
-  this.logActivity = async function(user_id, action, provider, req, userDoc, saveDoc) {
-    var logSize = config.getItem("security.userActivityLogSize");
+  this.logActivity = async function(userId, action, provider, req, userDoc, saveDoc) {
+    let logSize = config.getItem("security.userActivityLogSize");
     if (!logSize) {
       return userDoc;
     }
-    let user;
     if (!userDoc) {
       if (saveDoc !== false) {
         saveDoc = true;
       }
-      userDoc = await userDB.get(user_id);
+      userDoc = await userDB.get(userId);
     }
-    userDoc = theUser;
     if (!userDoc.activity || !(userDoc.activity instanceof Array)) {
       userDoc.activity = [];
     }
-    var entry = {
+    let entry = {
       timestamp: new Date().toISOString(),
       action: action,
       provider: provider,
@@ -688,7 +687,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       userDoc.activity.pop();
     }
     if (saveDoc) {
-      await userDB.put(userDoc)
+      await userDB.put(userDoc);
     }
     return userDoc;
   };
@@ -713,7 +712,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     return {
       token: token,
       payload: payload
-    }
+    };
   };
 
   this.generateRefreshJWT = async function(user, permanent) {
@@ -730,18 +729,18 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       jwtExpires = typeof jwtExpires === "string" ? Math.floor(ms(jwtExpires) / 1000) : jwtExpires || Math.floor(ms("30d") / 1000);
       payload["exp"] = Math.floor(Date.now() / 1000) + jwtExpires;
     }
-    const token = await BPromise.promisify(jwt.sign)(payload, config.getItem("security.jwt.secret"))
+    const token = await BPromise.promisify(jwt.sign)(payload, config.getItem("security.jwt.secret"));
     return {
       token: token,
       payload: payload
-    }
+    };
   };
 
   this.refreshSession = async function(req) {
-    var user = req.user;
-    var newSession = {};
-    var newExpires;
-    var provider = null;
+    let user = req.user;
+    let newSession = {};
+    let newExpires;
+    let provider = null;
     if (user.payload.token_use === "access" && user.payload.dbExpires < Date.now()) {
       const tempUser = await couchAuthDB.get("org.couchdb.user:" + user.payload.dbUser);
       newExpires = Date.now() + sessionLife;
@@ -756,14 +755,14 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       newSession.dbUser = jwt_.payload.dbUser;
       newSession.dbPass = jwt_.payload.dbPass;
       newSession.dbExpires = jwt_.payload.dbExpires;
-      newSession.user_id = user._id;
+      newSession.userId = user._id;
       newSession.roles = user.roles;
       // Inject the list of userDBs
       if (typeof user.personalDBs === "object") {
-        var userDBs = {};
-        var publicURL;
+        let userDBs = {};
+        let publicURL;
         if (config.getItem("dbServer.publicURL")) {
-          var dbObj = url.parse(config.getItem("dbServer.publicURL"));
+          let dbObj = url.parse(config.getItem("dbServer.publicURL"));
           dbObj.auth = newSession.token + ":" + newSession.password;
           publicURL = dbObj.format();
         }
@@ -792,20 +791,20 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
 
   this.resetPassword = async function(form, req) {
     req = req || {};
-    var ResetPasswordModel = new Model(resetPasswordModel);
-    var passwordResetForm = new ResetPasswordModel(form);
-    var user;
+    let ResetPasswordModel = new Model(resetPasswordModel);
+    let passwordResetForm = new ResetPasswordModel(form);
+    let user;
     try {
       await passwordResetForm.validate();
     }
-    catch(err) {
+    catch (err) {
       throw new Error({
         error: "Validation failed",
         validationErrors: err,
         status: 400
       });
     }
-    var tokenHash = util.hashToken(form.token);
+    let tokenHash = util.hashToken(form.token);
     const results = await userDB.query("auth/passwordReset", {key: tokenHash, include_docs: true});
     if (!results.rows.length) {
       return BPromise.reject({status: 400, error: "Invalid token"});
@@ -827,27 +826,27 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     await self.logoutUserSessions(user, "all");
     delete user.forgotPassword;
     await self.logActivity(user._id, "reset password", "local", req, user);
-    await userDB.put(finalUser);
+    await userDB.put(user);
     emitter.emit("password-reset", user);
     return user;
   };
 
-  this.changePasswordSecure = async function(user_id, form, req) {
+  this.changePasswordSecure = async function(userId, form, req) {
     req = req || {};
-    var self = this;
-    var ChangePasswordModel = new Model(changePasswordModel);
-    var changePasswordForm = new ChangePasswordModel(form);
+    let self = this;
+    let ChangePasswordModel = new Model(changePasswordModel);
+    let changePasswordForm = new ChangePasswordModel(form);
     try {
       changePasswordForm.validate();
     }
-    catch(err) {
+    catch (err) {
       throw new Error({
         error: "Validation failed",
         validationErrors: err,
         status: 400
       });
     }
-    const user = await userDB.get(user_id);
+    const user = await userDB.get(userId);
     if (user.local && user.local.salt && user.local.derived_key) {
       // Password is required
       if (!form.currentPassword) {
@@ -860,10 +859,11 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       try {
         await util.verifyPassword(user.local, form.currentPassword);
       }
-      catch(err) {
+      catch (err) {
         throw new Error(err || {
           error: "Password change failed",
-          message: "The current password you supplied is incorrect.", status: 400
+          message: "The current password you supplied is incorrect.",
+          status: 400
         });
       }
     }
@@ -873,10 +873,14 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     }
   };
 
-  this.changePassword = async function(user_id, newPassword, userDoc, req) {
+  this.changePassword = async function(userId, newPassword, userDoc, req) {
     req = req || {};
+    let user;
     if (!userDoc) {
-      userDoc = await userDB.get(user_id);
+      user = await userDB.get(userId);
+    }
+    else {
+      user = userDoc;
     }
     const hash = await util.hashPassword(newPassword);
     if (!user.local) {
@@ -929,7 +933,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
 
   this.verifyEmail = async function(token, req) {
     req = req || {};
-    var user;
+    let user;
     const result = userDB.query("auth/verifyEmail", { key: token, include_docs: true });
     if (!result.rows.length) {
       return BPromise.reject({error: "Invalid token", status: 400});
@@ -939,19 +943,19 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     delete user.unverifiedEmail;
     emitter.emit("email-verified", user);
     await self.logActivity(user._id, "verified email", "local", req, user);
-    await userDB.put(finalUser);
+    await userDB.put(user);
   };
 
-  this.changeEmail = async function(user_id, newEmail, req) {
+  this.changeEmail = async function(userId, newEmail, req) {
     req = req || {};
     if (!req.user) {
       req.user = {provider: "local"};
     }
-    const err = await self.validateEmail(newEmail)
+    const err = await self.validateEmail(newEmail);
     if (err) {
       throw new Error(err);
     }
-    const user = await userDB.get(user_id);
+    const user = await userDB.get(userId);
     if (config.getItem("local.sendConfirmEmail")) {
       user.unverifiedEmail = {
         email: newEmail,
@@ -964,16 +968,16 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     }
     emitter.emit("email-changed", user);
     await self.logActivity(user._id, "changed email", req.user.provider, req, user);
-    await userDB.put(finalUser);
+    await userDB.put(user);
   };
 
-  this.addUserDB = async function(user_id, dbName, type, designDocs, permissions) {
-    var dbConfig = dbAuth.getDBConfig(dbName, type || "private");
+  this.addUserDB = async function(userId, dbName, type, designDocs, permissions) {
+    let dbConfig = dbAuth.getDBConfig(dbName, type || "private");
     dbConfig.designDocs = designDocs || dbConfig.designDocs || "";
     dbConfig.permissions = permissions || dbConfig.permissions;
-    dbConfig.memberRoles.push("user:" + user_id);
+    dbConfig.memberRoles.push("user:" + userId);
     // console.log(dbConfig.memberRoles);
-    const userDoc = await userDB.get(user_id);
+    const userDoc = await userDB.get(userId);
     const finalDBName = await dbAuth.addUserDB(
       userDoc,
       dbName,
@@ -994,17 +998,17 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     delete dbConfig.adminRoles;
     delete dbConfig.memberRoles;
     userDoc.personalDBs[finalDBName] = dbConfig;
-    emitter.emit("user-db-added", user_id, dbName);
+    emitter.emit("user-db-added", userId, dbName);
     await userDB.put(userDoc);
   };
 
-  this.removeUserDB = async function(user_id, dbName, deletePrivate, deleteShared) {
-    var update = false;
-    const user = await userDB.get(user_id);
+  this.removeUserDB = async function(userId, dbName, deletePrivate, deleteShared) {
+    let update = false;
+    const user = await userDB.get(userId);
     if (user.personalDBs && typeof user.personalDBs === "object") {
       Object.keys(user.personalDBs).forEach(function(db) {
         if (user.personalDBs[db].name === dbName) {
-          var type = user.personalDBs[db].type;
+          let type = user.personalDBs[db].type;
           delete user.personalDBs[db];
           update = true;
           if (type === "private" && deletePrivate) {
@@ -1017,7 +1021,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       });
     }
     if (update) {
-      emitter.emit("user-db-removed", user_id, dbName);
+      emitter.emit("user-db-removed", userId, dbName);
       await userDB.put(user);
     }
   };
@@ -1029,9 +1033,9 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
   this.logoutSession = function(user) {
     // console.log(user);
     return new Promise((resolve, reject) => {
-      var session_id = user.payload.dbUser;
-      var promises = [];
-      promises.push(dbAuth.removeKeys(session_id));
+      let sessionId = user.payload.dbUser;
+      let promises = [];
+      promises.push(dbAuth.removeKeys(sessionId));
       resolve(BPromise.all(promises));
     }).then(function() {
       // Clean out expired sessions
@@ -1042,16 +1046,15 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     });
   };
 
-  this.logoutOthers = function(user, session_id) {
-    return self.logoutUserSessions(user, "other", session_id);
+  this.logoutOthers = function(user, sessionId) {
+    return self.logoutUserSessions(user, "other", sessionId);
   };
 
   this.logoutUserSessions = function(userDoc, op, currentSession) {
     return new Promise((resolve, reject) => {
       // When op is 'other' it will logout all sessions except for the specified 'currentSession'
-      var promises = [];
-      var promise;
-      var sessions;
+      let promises = [];
+      let promise;
       if (op === "all" || op === "other") {
         promise = self.getSessions(userDoc._id);
       }
@@ -1062,7 +1065,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
         // console.log(sessions);
         if (op === "other" && currentSession) {
           // Remove the current session from the list of sessions we are going to delete
-          var index = sessions.indexOf(currentSession);
+          let index = sessions.indexOf(currentSession);
           if (index > -1) {
             sessions.splice(index, 1);
           }
@@ -1081,10 +1084,10 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     });
   };
 
-  this.remove = function(user_id, destroyDBs) {
-    var user;
-    var promises = [];
-    return userDB.get(user_id)
+  this.remove = function(userId, destroyDBs) {
+    let user;
+    let promises = [];
+    return userDB.get(userId)
       .then(function(userDoc) {
         return self.logoutUserSessions(userDoc, "all");
       })
@@ -1107,9 +1110,9 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
 
   this.removeExpiredKeys = dbAuth.removeExpiredKeys.bind(dbAuth);
 
-  this.getSessions = function(user_id) {
+  this.getSessions = function(userId) {
     return couchAuthDB.query("_superlogin/user", {
-      key: user_id,
+      key: userId,
       include_docs: true
     }).then(result => {
       return BPromise.resolve(result.rows.map(i => i.doc.name));
@@ -1118,13 +1121,13 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     });
   };
 
-  this.getExpiredSessions = function(user_id, date) {
+  this.getExpiredSessions = function(userId, date) {
     return couchAuthDB.query("_superlogin/expired", {
       include_docs: true
     }).then(result => {
-      if (user_id) {
+      if (userId) {
         return result.rows.filter(i => {
-          return i.doc.user_id === user_id && i.doc.expires < Math.floor(Date.now() / 1000);
+          return i.doc.userId === userId && i.doc.expires < Math.floor(Date.now() / 1000);
         }).map(i => i.doc.name);
       }
       return result.rows.filter(i => {
@@ -1149,19 +1152,15 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     });
   };
 
-  this.quitRedis = function() {
-    return session.quit();
-  };
-
   function generateSession(username, roles) {
-    var token = util.URLSafeUUID();
+    let token = util.URLSafeUUID();
     // Make sure our token doesn't start with illegal characters
     while (token[0] === "_" || token[0] === "-") {
       token = util.URLSafeUUID();
     }
     console.log(sessionLife);
-    var password = util.URLSafeUUID();
-    var now = Date.now();
+    let password = util.URLSafeUUID();
+    let now = Date.now();
     return BPromise.resolve({
       _id: username,
       key: token,
@@ -1175,20 +1174,20 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
   // Adds numbers to a base name until it finds a unique database key
   function generateUsername(base) {
     base = base.toLowerCase();
-    var entries = [];
-    var finalName;
+    let entries = [];
+    let finalName;
     return userDB.allDocs({startkey: base, endkey: base + "\uffff", include_docs: false})
       .then(function(results) {
         if (results.rows.length === 0) {
           return BPromise.resolve(base);
         }
-        for (var i = 0; i < results.rows.length; i++) {
+        for (let i = 0; i < results.rows.length; i++) {
           entries.push(results.rows[i].id);
         }
         if (entries.indexOf(base) === -1) {
           return BPromise.resolve(base);
         }
-        var num = 0;
+        let num = 0;
         while (!finalName) {
           num++;
           if (entries.indexOf(base + num) === -1) {
@@ -1204,12 +1203,12 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     if (!config.getItem("userDBs.defaultDBs")) {
       return BPromise.resolve(newUser);
     }
-    var promises = [];
+    let promises = [];
     newUser.personalDBs = {};
 
-    var processUserDBs = function(dbList, type) {
+    let processUserDBs = function(dbList, type) {
       dbList.forEach(function(userDBName) {
-        var dbConfig = dbAuth.getDBConfig(userDBName);
+        let dbConfig = dbAuth.getDBConfig(userDBName);
         dbConfig.memberRoles.push("user:" + newUser._id);
         // console.log(dbConfig);
         promises.push(
@@ -1227,12 +1226,12 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     };
 
     // Just in case defaultDBs is not specified
-    var defaultPrivateDBs = config.getItem("userDBs.defaultDBs.private");
+    let defaultPrivateDBs = config.getItem("userDBs.defaultDBs.private");
     if (!Array.isArray(defaultPrivateDBs)) {
       defaultPrivateDBs = [];
     }
     processUserDBs(defaultPrivateDBs, "private");
-    var defaultSharedDBs = config.getItem("userDBs.defaultDBs.shared");
+    let defaultSharedDBs = config.getItem("userDBs.defaultDBs.shared");
     if (!Array.isArray(defaultSharedDBs)) {
       defaultSharedDBs = [];
     }

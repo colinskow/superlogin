@@ -3,10 +3,9 @@ import URLSafeBase64 from "urlsafe-base64";
 import * as uuid from "uuid";
 import pwd from "couch-pwd";
 import crypto from "crypto";
-import jwt from "jsonwebtoken";
 
 export function URLSafeUUID() {
-  return URLSafeBase64.encode(uuid.v4(null, new Buffer(16)));
+  return URLSafeBase64.encode(uuid.v4(null, Buffer.alloc(16)));
 };
 
 export function hashToken(token) {
@@ -31,16 +30,16 @@ export function verifyPassword(hashObj, password) {
   var getHash = BPromise.promisify(pwd.hash, {context: pwd});
   var iterations = hashObj.iterations;
   var salt = hashObj.salt;
-  var derived_key = hashObj.derived_key;
+  var derivedKey = hashObj.derived_key;
   if (iterations) {
     pwd.iterations(iterations);
   }
-  if (!salt || !derived_key) {
+  if (!salt || !derivedKey) {
     return BPromise.reject(false);
   }
   return getHash(password, salt)
     .then(function(hash) {
-      if (hash === derived_key) {
+      if (hash === derivedKey) {
         return BPromise.resolve(true);
       }
       else {
@@ -75,7 +74,7 @@ export function toArray(obj) {
 export function getSessionToken(req) {
   if (req.headers && req.headers.authorization) {
     var parts = req.headers.authorization.split(" ");
-    if (parts.length == 2) {
+    if (parts.length === 2) {
       var scheme = parts[0];
       var credentials = parts[1];
       if (/^Bearer$/i.test(scheme)) {

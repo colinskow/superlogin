@@ -1,10 +1,11 @@
 {
   "name": "superlogin-jwt",
-  "version": "0.0.6",
+  "version": "0.0.11",
   "description": "Powerful authentication for APIs and single page apps using the CouchDB ecosystem which supports a variety of providers.",
   "main": "./lib/index.js",
   "scripts": {
     "build": "node node_modules/webpack/bin/webpack.js",
+    "prepare": "npm run build",
     "test": "gulp"
   },
   "repository": {

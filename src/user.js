@@ -2,7 +2,7 @@ import url from "url";
 import BPromise from "bluebird";
 import Model from "sofa-model";
 import nodemailer from "nodemailer";
-import util from "./util";
+import * as util from "./util";
 import DBAuth from "./dbauth";
 import _ from "lodash";
 import jwt from "jsonwebtoken";
@@ -967,66 +967,59 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     await userDB.put(finalUser);
   };
 
-  this.addUserDB = function(user_id, dbName, type, designDocs, permissions) {
-    var userDoc;
+  this.addUserDB = async function(user_id, dbName, type, designDocs, permissions) {
     var dbConfig = dbAuth.getDBConfig(dbName, type || "private");
     dbConfig.designDocs = designDocs || dbConfig.designDocs || "";
     dbConfig.permissions = permissions || dbConfig.permissions;
     dbConfig.memberRoles.push("user:" + user_id);
     // console.log(dbConfig.memberRoles);
-    return userDB.get(user_id)
-      .then(function(result) {
-        userDoc = result;
-        return dbAuth.addUserDB(userDoc, dbName, dbConfig.designDocs, dbConfig.type, dbConfig.permissions,
-          dbConfig.adminRoles, dbConfig.memberRoles);
-      })
-      .then(function(finalDBName) {
-        if (!userDoc.personalDBs) {
-          userDoc.personalDBs = {};
-        }
-        delete dbConfig.designDocs;
-        // If permissions is specified explicitly it will be saved, otherwise will be taken from defaults every session
-        if (!permissions) {
-          delete dbConfig.permissions;
-        }
-        delete dbConfig.adminRoles;
-        delete dbConfig.memberRoles;
-        userDoc.personalDBs[finalDBName] = dbConfig;
-        emitter.emit("user-db-added", user_id, dbName);
-        return userDB.put(userDoc);
-      });
+    const userDoc = await userDB.get(user_id);
+    const finalDBName = await dbAuth.addUserDB(
+      userDoc,
+      dbName,
+      dbConfig.designDocs,
+      dbConfig.type,
+      dbConfig.permissions,
+      dbConfig.adminRoles,
+      dbConfig.memberRoles
+    );
+    if (!userDoc.personalDBs) {
+      userDoc.personalDBs = {};
+    }
+    delete dbConfig.designDocs;
+    // If permissions is specified explicitly it will be saved, otherwise will be taken from defaults every session
+    if (!permissions) {
+      delete dbConfig.permissions;
+    }
+    delete dbConfig.adminRoles;
+    delete dbConfig.memberRoles;
+    userDoc.personalDBs[finalDBName] = dbConfig;
+    emitter.emit("user-db-added", user_id, dbName);
+    await userDB.put(userDoc);
   };
 
-  this.removeUserDB = function(user_id, dbName, deletePrivate, deleteShared) {
-    var user;
+  this.removeUserDB = async function(user_id, dbName, deletePrivate, deleteShared) {
     var update = false;
-    return userDB.get(user_id)
-      .then(function(userDoc) {
-        user = userDoc;
-        if (user.personalDBs && typeof user.personalDBs === "object") {
-          Object.keys(user.personalDBs).forEach(function(db) {
-            if (user.personalDBs[db].name === dbName) {
-              var type = user.personalDBs[db].type;
-              delete user.personalDBs[db];
-              update = true;
-              if (type === "private" && deletePrivate) {
-                return dbAuth.removeDB(dbName);
-              }
-              if (type === "shared" && deleteShared) {
-                return dbAuth.removeDB(dbName);
-              }
-            }
-          });
+    const user = await userDB.get(user_id);
+    if (user.personalDBs && typeof user.personalDBs === "object") {
+      Object.keys(user.personalDBs).forEach(function(db) {
+        if (user.personalDBs[db].name === dbName) {
+          var type = user.personalDBs[db].type;
+          delete user.personalDBs[db];
+          update = true;
+          if (type === "private" && deletePrivate) {
+            return dbAuth.removeDB(dbName);
+          }
+          if (type === "shared" && deleteShared) {
+            return dbAuth.removeDB(dbName);
+          }
         }
-        return BPromise.resolve();
-      })
-      .then(function() {
-        if (update) {
-          emitter.emit("user-db-removed", user_id, dbName);
-          return userDB.put(user);
-        }
-        return BPromise.resolve();
       });
+    }
+    if (update) {
+      emitter.emit("user-db-removed", user_id, dbName);
+      await userDB.put(user);
+    }
   };
 
   this.logoutUser = function(user) {

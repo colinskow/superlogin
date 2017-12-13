@@ -10,7 +10,7 @@ import loadRoutes from "./routes";
 import localConfig from "./local";
 // import Middleware from "./middleware";
 import Mailer from "./mailer";
-import util from "./util";
+import * as util from "./util";
 import seed from "pouchdb-seed-design";
 
 export default class SuperLogin {

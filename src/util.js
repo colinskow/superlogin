@@ -1,22 +1,20 @@
-"use strict";
+import BPromise from "bluebird";
+import URLSafeBase64 from "urlsafe-base64";
+import * as uuid from "uuid";
+import pwd from "couch-pwd";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
-var Promise = require("bluebird");
-var URLSafeBase64 = require("urlsafe-base64");
-var uuid = require("uuid");
-var pwd = require("couch-pwd");
-var crypto = require("crypto");
-const jwt = require("jsonwebtoken");
-
-exports.URLSafeUUID = function() {
+export function URLSafeUUID() {
   return URLSafeBase64.encode(uuid.v4(null, new Buffer(16)));
 };
 
-exports.hashToken = function(token) {
+export function hashToken(token) {
   return crypto.createHash("sha256").update(token).digest("hex");
 };
 
-exports.hashPassword = function(password) {
-  return new Promise(function(resolve, reject) {
+export function hashPassword(password) {
+  return new BPromise(function(resolve, reject) {
     pwd.hash(password, function(err, salt, hash) {
       if (err) {
         return reject(err);
@@ -29,8 +27,8 @@ exports.hashPassword = function(password) {
   });
 };
 
-exports.verifyPassword = function(hashObj, password) {
-  var getHash = Promise.promisify(pwd.hash, {context: pwd});
+export function verifyPassword(hashObj, password) {
+  var getHash = BPromise.promisify(pwd.hash, {context: pwd});
   var iterations = hashObj.iterations;
   var salt = hashObj.salt;
   var derived_key = hashObj.derived_key;
@@ -38,20 +36,20 @@ exports.verifyPassword = function(hashObj, password) {
     pwd.iterations(iterations);
   }
   if (!salt || !derived_key) {
-    return Promise.reject(false);
+    return BPromise.reject(false);
   }
   return getHash(password, salt)
     .then(function(hash) {
       if (hash === derived_key) {
-        return Promise.resolve(true);
+        return BPromise.resolve(true);
       }
       else {
-        return Promise.reject(false);
+        return BPromise.reject(false);
       }
     });
 };
 
-exports.getDBURL = function(db) {
+export function getDBURL(db) {
   var url;
   if (db.user) {
     url = db.protocol + encodeURIComponent(db.user) + ":" + encodeURIComponent(db.password) + "@" + db.host;
@@ -62,11 +60,11 @@ exports.getDBURL = function(db) {
   return url;
 };
 
-exports.getFullDBURL = function(dbConfig, dbName) {
+export function getFullDBURL(dbConfig, dbName) {
   return exports.getDBURL(dbConfig) + "/" + dbName;
 };
 
-exports.toArray = function(obj) {
+export function toArray(obj) {
   if (!(obj instanceof Array)) {
     obj = [obj];
   }
@@ -74,7 +72,7 @@ exports.toArray = function(obj) {
 };
 
 // Takes a req object and returns the bearer token, or undefined if it is not found
-exports.getSessionToken = function(req) {
+export function getSessionToken(req) {
   if (req.headers && req.headers.authorization) {
     var parts = req.headers.authorization.split(" ");
     if (parts.length == 2) {
@@ -88,7 +86,7 @@ exports.getSessionToken = function(req) {
 };
 
 // Generates views for each registered provider in the user design doc
-exports.addProvidersToDesignDoc = function(config, ddoc) {
+export function addProvidersToDesignDoc(config, ddoc) {
   var providers = config.getItem("providers");
   if (!providers) {
     return ddoc;
@@ -106,7 +104,7 @@ exports.addProvidersToDesignDoc = function(config, ddoc) {
 };
 
 // Capitalizes the first letter of a string
-exports.capitalizeFirstLetter = function(string) {
+export function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
 
@@ -119,7 +117,7 @@ exports.capitalizeFirstLetter = function(string) {
  * @return {object|undefined} a reference to the requested key or undefined if not found
  */
 
-exports.getObjectRef = function(obj, str) {
+export function getObjectRef(obj, str) {
   str = str.replace(/\[(\w+)\]/g, ".$1"); // convert indexes to properties
   str = str.replace(/^\./, ""); // strip a leading dot
   var pList = str.split(".");
@@ -145,7 +143,7 @@ exports.getObjectRef = function(obj, str) {
  * @return {*} the value the reference was set to
  */
 
-exports.setObjectRef = function(obj, str, val) {
+export function setObjectRef(obj, str, val) {
   str = str.replace(/\[(\w+)\]/g, ".$1"); // convert indexes to properties
   str = str.replace(/^\./, ""); // strip a leading dot
   var pList = str.split(".");
@@ -169,7 +167,7 @@ exports.setObjectRef = function(obj, str, val) {
  * @return {boolean} true if successful
  */
 
-exports.delObjectRef = function(obj, str) {
+export function delObjectRef(obj, str) {
   str = str.replace(/\[(\w+)\]/g, ".$1"); // convert indexes to properties
   str = str.replace(/^\./, ""); // strip a leading dot
   var pList = str.split(".");
@@ -193,7 +191,7 @@ exports.delObjectRef = function(obj, str) {
  * @return {array} resulting array
  */
 
-exports.arrayUnion = function(a, b) {
+export function arrayUnion(a, b) {
   var result = a.concat(b);
   for (var i = 0; i < result.length; ++i) {
     for (var j = i + 1; j < result.length; ++j) {

@@ -1,4 +1,4 @@
-import util from "./util";
+import * as util from "./util";
 import LocalStrategy from "passport-local";
 import { Strategy as BearerStrategy } from "passport-http-bearer-sl";
 

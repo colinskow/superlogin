@@ -3,34 +3,23 @@ import path from "path";
 import BPromise from "bluebird";
 import ejs from "ejs";
 import { _extend as extend } from "util";
-import util from "./util";
+import * as util from "./util";
 
 var stateRequired = ["google", "linkedin"];
 
-var self;
-
-export default class Oauth {
-
-  constructor(router, passport, user, config) {
-    this.router = router;
-    this.passport = passport;
-    this.user = user;
-    this.config = config;
-    self = this;
-  }
-
+export default function(router, passport, user, config) {
   // Function to initialize a session following authentication from a socialAuth provider
-  async initSession(req, res, next) {
-    var provider = self.getProvider(req.path);
+  async function initSession(req, res, next) {
+    var provider = getProvider(req.path);
     try {
-      const mySession = await self.user.createSession(provider, req);
+      const mySession = await user.createSession(provider, req);
       const results = {
         error: null,
         session: mySession,
         link: null
       };
       var template;
-      if (self.config.getItem("testMode.oauthTest")) {
+      if (config.getItem("testMode.oauthTest")) {
         template = fs.readFileSync(path.join(__dirname, "../templates/oauth/auth-callback-test.ejs"), "utf8");
       }
       else {
@@ -45,10 +34,10 @@ export default class Oauth {
   }
 
   // Function to initialize a session following authentication from a socialAuth provider
-  async initTokenSession(req, res, next) {
+  async function initTokenSession(req, res, next) {
     var provider = getProviderToken(req.path);
     try {
-      const mySession = await self.user.createSession(provider, req)
+      const mySession = await user.createSession(provider, req)
       res.status(200).json(session);
     }
     catch(err) {
@@ -57,15 +46,15 @@ export default class Oauth {
   }
 
   // Called after an account has been succesfully linked
-  linkSuccess(req, res, next) {
-    var provider = self.getProvider(req.path);
+  function linkSuccess(req, res, next) {
+    var provider = getProvider(req.path);
     var result = {
       error: null,
       session: null,
       link: provider
     };
     var template;
-    if (self.config.getItem("testMode.oauthTest")) {
+    if (config.getItem("testMode.oauthTest")) {
       template = fs.readFileSync(path.join(__dirname, "../templates/oauth/auth-callback-test.ejs"), "utf8");
     }
     else {
@@ -76,8 +65,8 @@ export default class Oauth {
   }
 
   // Called after an account has been succesfully linked using access_token provider
-  linkTokenSuccess(req, res, next) {
-    var provider = self.getProviderToken(req.path);
+  function linkTokenSuccess(req, res, next) {
+    var provider = getProviderToken(req.path);
     res.status(200).json({
       ok: true,
       success: util.capitalizeFirstLetter(provider) + " successfully linked",
@@ -86,9 +75,9 @@ export default class Oauth {
   }
 
   // Handles errors if authentication fails
-  oauthErrorHandler(err, req, res, next) {
+  function oauthErrorHandler(err, req, res, next) {
     var template;
-    if (self.config.getItem("testMode.oauthTest")) {
+    if (config.getItem("testMode.oauthTest")) {
       template = fs.readFileSync(path.join(__dirname, "../templates/oauth/auth-callback-test.ejs"), "utf8");
     }
     else {
@@ -103,9 +92,9 @@ export default class Oauth {
   }
 
   // Handles errors if authentication from access_token provider fails
-  tokenAuthErrorHandler(err, req, res, next) {
+  function tokenAuthErrorHandler(err, req, res, next) {
     var status;
-    if (req.user && req.self.user._id) {
+    if (req.user && req.user._id) {
       status = 403;
     }
     else {
@@ -120,41 +109,41 @@ export default class Oauth {
   }
 
   // Framework to register OAuth providers with passport
-  registerProvider(provider, configFunction) {
+  function registerProvider(provider, configFunction) {
     console.log(provider, this);
     provider = provider.toLowerCase();
     var configRef = "providers." + provider;
-    if (self.config.getItem(configRef + ".credentials")) {
-      var credentials = self.config.getItem(configRef + ".credentials");
+    if (config.getItem(configRef + ".credentials")) {
+      var credentials = config.getItem(configRef + ".credentials");
       credentials.passReqToCallback = true;
-      var options = self.config.getItem(configRef + ".options") || {};
-      configFunction.call(null, credentials, self.passport, self.authHandler);
+      var options = config.getItem(configRef + ".options") || {};
+      configFunction.call(null, credentials, passport, authHandler);
       // register provider routes
-      self.router.get(
+      router.get(
         "/" + provider,
-        self.passportCallback(provider, options, "login")
+        passportCallback(provider, options, "login")
       );
       // register provider callbacks
-      self.router.get(
+      router.get(
         "/" + provider + "/callback",
-        self.passportCallback(provider, options, "login"),
-        self.initSession,
-        self.oauthErrorHandler
+        passportCallback(provider, options, "login"),
+        initSession,
+        oauthErrorHandler
       );
-      if (!self.config.getItem("security.disableLinkAccounts")) {
+      if (!config.getItem("security.disableLinkAccounts")) {
         // register link route
-        self.router.get(
+        router.get(
           "/link/" + provider,
-          self.passport.authenticate("bearer", {session: false}),
-          self.passportCallback(provider, options, "link")
+          passport.authenticate("bearer", {session: false}),
+          passportCallback(provider, options, "link")
         );
         // register link callback
-        self.router.get(
+        router.get(
           "/link/" + provider + "/callback",
-          self.passport.authenticate("bearer", {session: false}),
-          self.passportCallback(provider, options, "link"),
-          self.linkSuccess,
-          self.oauthErrorHandler
+          passport.authenticate("bearer", {session: false}),
+          passportCallback(provider, options, "link"),
+          linkSuccess,
+          oauthErrorHandler
         );
       }
       console.log(provider + " loaded.");
@@ -162,12 +151,12 @@ export default class Oauth {
   }
 
   // A shortcut to register OAuth2 providers that follow the exact accessToken, refreshToken pattern.
-  registerOAuth2(providerName, Strategy) {
-    self.registerProvider(providerName, (credentials, passport, authHandler) => {
-      self.passport.use(new Strategy(credentials,
+  function registerOAuth2(providerName, Strategy) {
+    registerProvider(providerName, (credentials, passport, authHandler) => {
+      passport.use(new Strategy(credentials,
         async (req, accessToken, refreshToken, profile, done) => {
           try {
-            const res = await self.authHandler(
+            const res = await authHandler(
               req,
               providerName,
               {
@@ -188,18 +177,18 @@ export default class Oauth {
 
   // Registers a provider that accepts an access_token directly from the client, skipping the popup window and callback
   // This is for supporting Cordova, native IOS and Android apps, as well as other devices
-  registerTokenProvider(providerName, Strategy) {
+  function registerTokenProvider(providerName, Strategy) {
     providerName = providerName.toLowerCase();
     var configRef = "providers." + providerName;
-    if (self.config.getItem(configRef + ".credentials")) {
-      var credentials = self.config.getItem(configRef + ".credentials");
+    if (config.getItem(configRef + ".credentials")) {
+      var credentials = config.getItem(configRef + ".credentials");
       credentials.passReqToCallback = true;
-      var options = self.config.getItem(configRef + ".options") || {};
+      var options = config.getItem(configRef + ".options") || {};
       // Configure the Passport Strategy
-      self.passport.use(providerName + "-token", new Strategy(credentials,
+      passport.use(providerName + "-token", new Strategy(credentials,
         async (req, accessToken, refreshToken, profile, done) => {
           try {
-            const res = await self.authHandler(
+            const res = await authHandler(
               req,
               providerName,
               {
@@ -214,19 +203,19 @@ export default class Oauth {
             done(err);
           }
         }));
-      self.router.post(
+      router.post(
         "/" + providerName + "/token",
-        self.passportTokenCallback(providerName, options),
-        self.initTokenSession,
-        self.tokenAuthErrorHandler
+        passportTokenCallback(providerName, options),
+        initTokenSession,
+        tokenAuthErrorHandler
       );
-      if (!self.config.getItem("security.disableLinkAccounts")) {
-        self.router.post(
+      if (!config.getItem("security.disableLinkAccounts")) {
+        router.post(
           "/link/" + providerName + "/token",
-          self.passport.authenticate("bearer", {session: false}),
-          self.passportTokenCallback(providerName, options),
-          self.linkTokenSuccess,
-          self.tokenAuthErrorHandler
+          passport.authenticate("bearer", {session: false}),
+          passportTokenCallback(providerName, options),
+          linkTokenSuccess,
+          tokenAuthErrorHandler
         );
       }
       console.log(providerName + "-token loaded.");
@@ -236,18 +225,18 @@ export default class Oauth {
   // This is called after a user has successfully authenticated with a provider
   // If a user is authenticated with a bearer token we will link an account, otherwise log in
   // auth is an object containing 'access_token' and optionally 'refresh_token'
-  authHandler(req, provider, auth, profile) {
-    if (req.user && req.self.user._id && req.self.user.key) {
-      return self.user.linkSocial(req.self.user._id, provider, auth, profile, req);
+  function authHandler(req, provider, auth, profile) {
+    if (req.user && req.user._id && req.user.key) {
+      return user.linkSocial(req.user._id, provider, auth, profile, req);
     }
     else {
-      return self.user.socialAuth(provider, auth, profile, req);
+      return user.socialAuth(provider, auth, profile, req);
     }
   }
 
-  // Configures the self.passport.authenticate for the given provider, passing in options
+  // Configures the passport.authenticate for the given provider, passing in options
   // Operation is 'login' or 'link'
-  passportCallback(provider, options, operation) {
+  function passportCallback(provider, options, operation) {
     // console.log(provider, options, operation);
     return (req, res, next) => {
       var theOptions = extend({}, options);
@@ -255,25 +244,25 @@ export default class Oauth {
         theOptions.state = true;
       }
       var accessToken = req.query.bearer_token || req.query.state;
-      if (accessToken && (stateRequired.indexOf(provider) > -1 || self.config.getItem("providers." + provider + ".stateRequired") === true)) {
+      if (accessToken && (stateRequired.indexOf(provider) > -1 || config.getItem("providers." + provider + ".stateRequired") === true)) {
         theOptions.state = accessToken;
       }
-      theOptions.callbackURL = self.getLinkCallbackURLs(provider, req, operation, accessToken);
+      theOptions.callbackURL = getLinkCallbackURLs(provider, req, operation, accessToken);
       theOptions.session = false;
-      self.passport.authenticate(provider, theOptions)(req, res, next);
+      passport.authenticate(provider, theOptions)(req, res, next);
     };
   }
 
-  // Configures the self.passport.authenticate for the given access_token provider, passing in options
-  passportTokenCallback(provider, options) {
+  // Configures the passport.authenticate for the given access_token provider, passing in options
+  function passportTokenCallback(provider, options) {
     return (req, res, next) => {
       var theOptions = extend({}, options);
       theOptions.session = false;
-      self.passport.authenticate(provider + "-token", theOptions)(req, res, next);
+      passport.authenticate(provider + "-token", theOptions)(req, res, next);
     };
   }
 
-  getLinkCallbackURLs(provider, req, operation, accessToken) {
+  function getLinkCallbackURLs(provider, req, operation, accessToken) {
     if (accessToken) {
       accessToken = encodeURIComponent(accessToken);
     }
@@ -283,7 +272,7 @@ export default class Oauth {
     }
     if (operation === "link") {
       var reqUrl;
-      if (accessToken && (stateRequired.indexOf(provider) > -1 || self.config.getItem("providers." + provider + ".stateRequired") === true)) {
+      if (accessToken && (stateRequired.indexOf(provider) > -1 || config.getItem("providers." + provider + ".stateRequired") === true)) {
         reqUrl = protocol + req.get("host") + req.baseUrl + "/link/" + provider + "/callback";
       }
       else {
@@ -294,7 +283,7 @@ export default class Oauth {
   }
 
   // Gets the provider name from a callback path
-  getProvider(pathname) {
+  function getProvider(pathname) {
     var items = pathname.split("/");
     var index = items.indexOf("callback");
     if (index > 0) {
@@ -303,7 +292,7 @@ export default class Oauth {
   }
 
   // Gets the provider name from a callback path for access_token strategy
-  getProviderToken(pathname) {
+  function getProviderToken(pathname) {
     var items = pathname.split("/");
     var index = items.indexOf("token");
     if (index > 0) {
@@ -311,4 +300,7 @@ export default class Oauth {
     }
   }
 
+  this.registerOAuth2 = registerOAuth2;
+  this.registerProvider = registerProvider;
+  this.registerTokenProvider = registerTokenProvider;
 };

@@ -4,11 +4,10 @@ import util from "./../util";
 import axios from "axios";
 import seed from "pouchdb-seed-design";
 
-export default function(config, userDB, couchAuthDB) {
-  var adapter;
+import CouchAdapter from "./couchdb";
 
-  var CouchAdapter = require("./couchdb");
-  adapter = new CouchAdapter(couchAuthDB);
+export default function(config, userDB, couchAuthDB) {
+  var adapter = new CouchAdapter(couchAuthDB);
 
   this.storeKey = function(username, key, password, expires, roles) {
     return adapter.storeKey(username, key, password, expires, roles);

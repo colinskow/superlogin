@@ -97,7 +97,9 @@ export function addProvidersToDesignDoc(config, ddoc) {
     "  }\n" +
     "}";
   Object.keys(providers).forEach(function(provider) {
-    ddoc.auth.views[provider] = ddocTemplate.replace(new RegExp("%PROVIDER%", "g"), provider);
+    ddoc.auth.views[provider] = {
+      map: ddocTemplate.replace(new RegExp("%PROVIDER%", "g"), provider)
+    };
   });
   return ddoc;
 };

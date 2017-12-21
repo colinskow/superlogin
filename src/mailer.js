@@ -15,11 +15,22 @@ export default class {
       this.transporter = nodemailer.createTransport(customTransport(config.getItem("mailer.options")));
     }
     else {
+      let options = config.getItem("mailer.options");
+      if (!options) {
+        // disable e-mail support if not configured
+        this.disableMail = true;
+        return;
+      }
       this.transporter = nodemailer.createTransport(config.getItem("mailer.options"));
     }
   }
 
   sendEmail(templateName, email, locals) {
+    if (this.disableMail) {
+      // we don't send emails
+      // return immediately
+      return;
+    }
     // load the template and parse it
     var templateFile = this.config.getItem("emails." + templateName + ".template");
     if (!templateFile) {

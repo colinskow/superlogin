@@ -1,28 +1,30 @@
 import events from "events";
 import express from "express";
 
-import axiosDB from "axiosdb";
-
 import Configure from "./configure";
 import User from "./user";
 import Oauth from "./oauth";
 import loadRoutes from "./routes";
 import localConfig from "./local";
-// import Middleware from "./middleware";
+import Middleware from "./middleware";
 import Mailer from "./mailer";
 import * as util from "./util";
 import seed from "pouchdb-seed-design";
 
+const PouchDB = require("pouchdb-core")
+  .plugin(require("pouchdb-adapter-http"))
+  .plugin(require("pouchdb-mapreduce"));
+
 export default class {
   constructor(configData, passport, userDB, couchAuthDB) {
-    var config = new Configure(configData, require("../config/default.config"));
-    var router = express.Router();
-    var emitter = new events.EventEmitter();
+    const config = new Configure(configData, require("../config/default.config"));
+    const router = express.Router();
+    const emitter = new events.EventEmitter();
 
     if (!passport || typeof passport !== "object") {
       passport = require("passport");
     }
-    // var middleware = new Middleware(passport);
+    const middleware = new Middleware(passport);
 
     // Some extra default settings if no config object is specified
     if (!configData) {
@@ -32,25 +34,30 @@ export default class {
 
     // Create the DBs if they weren't passed in
     if (!userDB && config.getItem("dbServer.userDB")) {
-      // eslint-disable-next-line
-      userDB = new axiosDB(util.getFullDBURL(config.getItem("dbServer"), config.getItem("dbServer.userDB")));
+      userDB = new PouchDB(util.getFullDBURL(config.getItem("dbServer"), config.getItem("dbServer.userDB")));
     }
     if (!couchAuthDB && config.getItem("dbServer.couchAuthDB")) {
-      // eslint-disable-next-line
-      couchAuthDB = new axiosDB(util.getFullDBURL(config.getItem("dbServer"), config.getItem("dbServer.couchAuthDB")));
+      couchAuthDB = new PouchDB(util.getFullDBURL(config.getItem("dbServer"), config.getItem("dbServer.couchAuthDB")));
     }
     if (!userDB || typeof userDB !== "object") {
       throw new Error("userDB must be passed in as the third argument or specified in the config file under dbServer.userDB");
     }
 
-    var mailer = new Mailer(config);
-    var user = new User(config, userDB, couchAuthDB, mailer, emitter);
-    var oauth = new Oauth(router, passport, user, config);
+    const mailer = new Mailer(config);
+    const user = new User(config, userDB, couchAuthDB, mailer, emitter);
+    const oauth = new Oauth(router, passport, user, config);
 
     // Seed design docs for the user database
     var userDesign = require("../designDocs/user-design");
     userDesign = util.addProvidersToDesignDoc(config, userDesign);
-    seed(userDB, userDesign);
+    seed(userDB, userDesign).then(function(updated) {
+      if (updated) {
+        console.log("DDocs updated!");
+      }
+      else {
+        console.log("No update was necessary");
+      }
+    });
     // Configure Passport local login and api keys
     localConfig(config, passport, user);
     // Load the routes
@@ -92,12 +99,11 @@ export default class {
       confirmSession: user.confirmSession,
       removeExpiredKeys: user.removeExpiredKeys,
       sendEmail: mailer.sendEmail,
-      quitRedis: user.quitRedis
       // authentication middleware
-      // requireAuth: middleware.requireAuth,
-      // requireRole: middleware.requireRole,
-      // requireAnyRole: middleware.requireAnyRole,
-      // requireAllRoles: middleware.requireAllRoles
+      requireAuth: middleware.requireAuth,
+      requireRole: middleware.requireRole,
+      requireAnyRole: middleware.requireAnyRole,
+      requireAllRoles: middleware.requireAllRoles
     });
   }
 };

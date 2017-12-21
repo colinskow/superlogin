@@ -27,7 +27,12 @@ module.exports = {
     library: 'SuperLogin',
     libraryTarget: 'umd'
   },
-  externals: nodeExternals,
+  externals: [nodeExternals, function(context, request, callback) {
+    if (/^.*\/designDocs\/.*$/.test(request)) {
+      return callback(null, 'commonjs ' + request);
+    }
+    callback();
+  }],
   resolve: {
     extensions: ['.js', '.json'],
     alias: {

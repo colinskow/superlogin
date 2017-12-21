@@ -1,10 +1,13 @@
 import BPromise from "bluebird";
-import axiosDB from "axiosdb";
 import * as util from "./../util";
 import axios from "axios";
 import seed from "pouchdb-seed-design";
 
 import CouchAdapter from "./couchdb";
+
+const PouchDB = require("pouchdb-core")
+  .plugin(require("pouchdb-adapter-http"))
+  .plugin(require("pouchdb-mapreduce"));
 
 export default function(config, userDB, couchAuthDB) {
   var adapter = new CouchAdapter(couchAuthDB);
@@ -44,7 +47,7 @@ export default function(config, userDB, couchAuthDB) {
     }
     return self.createDB(finalDBName).then(function() {
       // eslint-disable-next-line
-      newDB = new axiosDB(util.getDBURL(config.getItem("dbServer")) + "/" + finalDBName);
+      newDB = new PouchDB(util.getDBURL(config.getItem("dbServer")) + "/" + finalDBName);
       return adapter.initSecurity(newDB, adminRoles, memberRoles);
     }).then(function() {
       // Seed the design docs
@@ -175,7 +178,7 @@ export default function(config, userDB, couchAuthDB) {
 
   this.removeDB = function(dbName) {
     // eslint-disable-next-line
-    var db = new axiosDB(util.getDBURL(config.getItem("dbServer")) + "/" + dbName);
+    var db = new PouchDB(util.getDBURL(config.getItem("dbServer")) + "/" + dbName);
     return db.destroy();
   };
 

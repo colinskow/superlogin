@@ -13,7 +13,7 @@ export default function(config, router, passport, user) {
         return res.status(401).json(info);
       }
       // Success
-      req.logIn(user, {session: false}, function(err) {
+      req.logIn(user, { session: false }, function(err) {
         // console.log("Passport logged in", Date.now());
         if (err) {
           return next(err);
@@ -92,6 +92,13 @@ export default function(config, router, passport, user) {
 
   // Setting up the auth api
   router.post("/register", async function(req, res, next) {
+    if (config.getItem("local.disableSignup")) {
+      res.status(201).json({
+        ok: false,
+        error: "Signup is disabled by config."
+      });
+      return;
+    }
     try {
       const newUser = await user.create(req.body, req);
       console.log(newUser);

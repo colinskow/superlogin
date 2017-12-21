@@ -13,7 +13,8 @@ module.exports = {
   },
   local: {
     usernameField: 'username',
-    passwordField: 'password'
+    passwordField: 'password',
+    disableSignup: false
   },
   session: {
     adapter: 'memory',

@@ -1,6 +1,6 @@
 {
   "name": "superlogin-jwt",
-  "version": "0.0.14",
+  "version": "0.1.0",
   "description": "Powerful authentication for APIs and single page apps using the CouchDB ecosystem which supports a variety of providers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -36,7 +36,6 @@
   "homepage": "https://github.com/SteffenDE/superlogin-jwt",
   "dependencies": {
     "axios": "^0.16.2",
-    "axiosdb": "0.0.3",
     "bluebird": "^3.5.1",
     "couch-pwd": "github:zeMirco/couch-pwd",
     "ejs": "^2.5.7",
@@ -49,6 +48,9 @@
     "passport": "^0.4.0",
     "passport-http-bearer-sl": "^1.0.4",
     "passport-local": "^1.0.0",
+    "pouchdb-adapter-http": "^6.4.1",
+    "pouchdb-core": "^6.4.1",
+    "pouchdb-mapreduce": "^6.4.1",
     "pouchdb-seed-design": "^0.3.0",
     "sofa-model": "^0.2.0",
     "urlsafe-base64": "1.0.0",

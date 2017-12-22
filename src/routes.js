@@ -62,7 +62,7 @@ export default function(config, router, passport, user) {
 
   router.post("/logout-others", passport.authenticate("bearer", { session: false }),
     async function(req, res, next) {
-      console.log(req.user);
+      // console.log(req.user);
       try {
         await user.logoutOthers(req.user, req.user.payload.dbUser);
         res.status(200).json({
@@ -101,7 +101,7 @@ export default function(config, router, passport, user) {
     }
     try {
       const newUser = await user.create(req.body, req);
-      console.log(newUser);
+      // console.log(newUser);
       req.user = newUser;
       if (config.getItem("security.loginOnRegistration")) {
         try {

@@ -198,14 +198,14 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     let promise;
     fnArray.forEach(function(fn) {
       if (!promise) {
-        promise = fn(null, userDoc, provider);
+        promise = fn(userDoc, provider);
       }
       else {
         if (!promise.then || typeof promise.then !== "function") {
           throw new Error("onCreate function must return a promise");
         }
         promise.then(function(newUserDoc) {
-          return fn(null, newUserDoc, provider);
+          return fn(newUserDoc, provider);
         });
       }
     });
@@ -571,10 +571,13 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     return user;
   };
 
-  this.createSession = async function(provider, req, refreshToken) {
+  this.createSession = async function(userId, provider, req, refreshToken) {
     // console.log("createSession", Date.now());
     const permanent = req.body.permanent;
-    const user = req.user;
+    let user = req.user;
+    if (!user) {
+      user = await this.get(userId);
+    }
     const origUser = JSON.parse(JSON.stringify(req.user || {}));
     const newSession = {};
     let password;
@@ -736,7 +739,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     };
   };
 
-  this.refreshSession = async function(req) {
+  this.refreshSession = async function(req, token) {
     let user = req.user;
     let newSession = {};
     let newExpires;
@@ -782,10 +785,14 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       return newSession;
     }
     else if (user.payload.token_use === "refresh") {
-      return this.createSession(null, req);
+      const newSession = await this.createSession(user._id, null, req);
+      emitter.emit("refresh", newSession, provider);
+      return newSession;
     }
     else {
-      return this.createSession(null, req, true);
+      const newSession = await this.createSession(user._id, null, req, true);
+      emitter.emit("refresh", newSession, provider);
+      return newSession;
     }
   };
 
@@ -1030,20 +1037,12 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     return self.logoutUserSessions(user, "all");
   };
 
-  this.logoutSession = function(user) {
-    // console.log(user);
-    return new Promise((resolve, reject) => {
-      let sessionId = user.payload.dbUser;
-      let promises = [];
-      promises.push(dbAuth.removeKeys(sessionId));
-      resolve(BPromise.all(promises));
-    }).then(function() {
-      // Clean out expired sessions
-      return self.logoutUserSessions(user, "expired");
-    }).then(function(finalUser) {
-      emitter.emit("logout", user._id);
-      return BPromise.resolve(false);
-    });
+  this.logoutSession = async function(user) {
+    let sessionId = user.payload.dbUser;
+    await dbAuth.removeKeys(sessionId);
+    await self.logoutUserSessions(user, "expired");
+    emitter.emit("logout", user._id);
+    return false;
   };
 
   this.logoutOthers = function(user, sessionId) {
@@ -1152,13 +1151,24 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     });
   };
 
+  this.getPayload = function(token) {
+    return new Promise((resolve, reject) => {
+      jwt.verify(token, config.getItem("security.jwt.secret"), (err, payload) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(payload);
+      });
+    });
+  };
+
   function generateSession(username, roles) {
     let token = util.URLSafeUUID();
     // Make sure our token doesn't start with illegal characters
     while (token[0] === "_" || token[0] === "-") {
       token = util.URLSafeUUID();
     }
-    console.log(sessionLife);
+    // console.log(sessionLife);
     let password = util.URLSafeUUID();
     let now = Date.now();
     return BPromise.resolve({

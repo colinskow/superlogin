@@ -9,18 +9,17 @@ module.exports = {
     sessionLife: "1d",
     tokenLife: "1d",
     loginOnRegistration: false,
-    loginOnPasswordReset: false
+    loginOnPasswordReset: false,
+    jwt: {
+      issuer: null,
+      // change!
+      secret: null
+    }
   },
   local: {
     usernameField: 'username',
     passwordField: 'password',
     disableSignup: false
-  },
-  session: {
-    adapter: 'memory',
-    file: {
-      sessionsRoot: '.sessions'
-    }
   },
   dbServer: {
     protocol: 'http://',

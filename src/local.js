@@ -33,7 +33,6 @@ export default function(config, passport, user) {
       passReqToCallback: true
     },
     async function(req, username, password, done) {
-      console.log("Passport", Date.now(), username, password);
       try {
         const theuser = await user.get(username);
         // console.log("Passport got user", Date.now());

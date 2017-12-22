@@ -30,7 +30,11 @@ module.exports = {
     // If set to true, the user will be logged in automatically after registering
     loginOnRegistration: false,
     // If set to true, the user will be logged in automatically after resetting the password
-    loginOnPasswordReset: false
+    loginOnPasswordReset: false,
+    jwt: {
+      issuer: "https://api.example.com",
+      secret: "changeme"
+    }
   },
   local: {
     // Send out a confirm email after each user signs up with local login

@@ -1,6 +1,6 @@
 {
   "name": "superlogin-jwt",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Powerful authentication for APIs and single page apps using the CouchDB ecosystem which supports a variety of providers.",
   "main": "./lib/index.js",
   "scripts": {
@@ -51,7 +51,7 @@
     "pouchdb-adapter-http": "^6.4.1",
     "pouchdb-core": "^6.4.1",
     "pouchdb-mapreduce": "^6.4.1",
-    "pouchdb-seed-design": "^0.3.0",
+    "pouchdb-seed-design": "github:SteffenDE/pouchdb-seed-design",
     "sofa-model": "^0.2.0",
     "urlsafe-base64": "1.0.0",
     "uuid": "^3.1.0"
@@ -62,12 +62,11 @@
     "babel-preset-env": "^1.6.1",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
+    "eslint": "^4.13.1",
     "eslint-loader": "^1.9.0",
     "gulp": "^3.9.1",
-    "gulp-jshint": "^2.0.4",
+    "gulp-eslint": "^4.0.0",
     "gulp-mocha": "^4.3.1",
-    "jshint": "^2.9.5",
-    "jshint-stylish": "^2.2.1",
     "mocha": "^4.0.1",
     "morgan": "^1.9.0",
     "rimraf": "^2.6.2",

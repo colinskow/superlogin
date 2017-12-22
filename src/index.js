@@ -49,15 +49,10 @@ export default class {
 
     // Seed design docs for the user database
     var userDesign = require("../designDocs/user-design");
+    var couchDesign = require("../designDocs/couch-design");
     userDesign = util.addProvidersToDesignDoc(config, userDesign);
-    seed(userDB, userDesign).then(function(updated) {
-      if (updated) {
-        console.log("DDocs updated!");
-      }
-      else {
-        console.log("No update was necessary");
-      }
-    });
+    seed(userDB, userDesign);
+    seed(couchAuthDB, couchDesign);
     // Configure Passport local login and api keys
     localConfig(config, passport, user);
     // Load the routes

@@ -4,7 +4,7 @@ var http = require("http");
 var bodyParser = require("body-parser");
 var morgan = require("morgan");
 
-var SuperLogin = require("../lib/index");
+var SuperLogin = require("../src/index").default;
 
 function start(config) {
   var app = express();
@@ -32,7 +32,6 @@ function start(config) {
   var server = http.createServer(app).listen(app.get("port"));
 
   app.shutdown = function() {
-    superlogin.quitRedis();
     server.close();
   };
 

@@ -195,6 +195,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
   };
 
   function processTransformations(fnArray, userDoc, provider) {
+    // console.log("processTransformations", fnArray, userDoc, provider);
     let promise;
     fnArray.forEach(function(fn) {
       if (!promise) {
@@ -254,11 +255,10 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       newUser = await user.process();
     }
     catch (err) {
-      return new Error({
-        error: "Validation failed",
-        validationErrors: err,
-        status: 400
-      });
+      let error = new Error("Validation failed");
+      error.validationErrors = err;
+      error.status = 400;
+      throw error;
     }
     if (emailUsername) {
       newUser._id = newUser.email;
@@ -291,6 +291,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       await mailer.sendEmail("confirmEmail", newUser.unverifiedEmail.email, {req: req, user: newUser});
     }
     emitter.emit("signup", newUser, "local");
+    return newUser;
   };
 
   this.createManual = async function(options, mergeDoc) {
@@ -339,10 +340,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     // if no password is specified, generate one
     if (!password) password = util.URLSafeUUID();
     if (!userId) {
-      throw new Error({
-        error: "Username must not be empty.",
-        status: 400
-      });
+      throw new Error("Username must not be empty.");
     }
     manualModel._id = userId;
     // username is valid, generate password hash
@@ -391,20 +389,18 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
         ip: ip
       };
       let emailFail = function() {
-        throw new Error({
-          error: "Email already in use",
-          message: "Your email is already in use. Try signing in first and then linking this account.",
-          status: 409
-        });
+        let error = new Error("Your email is already in use. Try signing in first and then linking this account.");
+        error.status = 409;
+        error.name = "Email already in use";
+        throw error;
       };
       // Now we need to generate a username
       if (emailUsername) {
         if (!user.email) {
-          throw new Error({
-            error: "No email provided",
-            message: "An email is required for registration, but " + provider + " didn't supply one.",
-            status: 400
-          });
+          let error = new Error("An email is required for registration, but " + provider + " didn't supply one.");
+          error.status = 400;
+          error.name = "No email provided";
+          throw error;
         }
         const err = await self.validateEmailUsername(user.email);
         if (err) {
@@ -433,7 +429,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
         if (err) {
           return emailFail();
         }
-        user._id = generateUsername(baseUsername);
+        user._id = await generateUsername(baseUsername);
       }
     }
     user[provider].auth = auth;
@@ -445,7 +441,8 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     if (newAccount) {
       await addUserDBs(user);
     }
-    await self.logActivity(user._id, newAccount ? "signup" : "login", provider, req, user);
+    action = newAccount ? "signup" : "login";
+    await self.logActivity(user._id, action, provider, req, user);
     if (newAccount) {
       await processTransformations(onCreateActions, user, provider);
     }
@@ -465,21 +462,19 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     const results = await userDB.query("auth/" + provider, { key: profile.id });
     if (results.rows.length > 0) {
       if (results.rows[0].id !== userId) {
-        throw new Error({
-          error: "Conflict",
-          message: "This " + provider + " profile is already in use by another account.",
-          status: 409
-        });
+        let error = new Error("This " + provider + " profile is already in use by another account.");
+        error.name = "Conflict";
+        error.status = 409;
+        throw error;
       }
     }
     const user = await userDB.get(userId);
     // Check for conflicting provider
     if (user[provider] && (user[provider].profile.id !== profile.id)) {
-      throw new Error({
-        error: "Conflict",
-        message: "Your account is already linked with another " + provider + "profile.",
-        status: 409
-      });
+      let error = new Error("Your account is already linked with another " + provider + "profile.");
+      error.name = "Conflict";
+      error.status = 409;
+      throw error;
     }
     // Check email for conflict
     let emailRes;
@@ -505,11 +500,10 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       });
     }
     if (!passed) {
-      throw new Error({
-        error: "Conflict",
-        message: "The email " + profile.emails[0].value + " is already in use by another account.",
-        status: 409
-      });
+      let error = new Error("The email " + profile.emails[0].value + " is already in use by another account.");
+      error.name = "Conflict";
+      error.status = 409;
+      throw error;
     }
     // Insert provider info
     user[provider] = {};
@@ -534,35 +528,31 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
   this.unlink = async function(userId, provider) {
     const user = await userDB.get(userId);
     if (!provider) {
-      throw new Error({
-        error: "Unlink failed",
-        message: "You must specify a provider to unlink.",
-        status: 400
-      });
+      let error = new Error("You must specify a provider to unlink.");
+      error.name = "Unlink failed";
+      error.status = 400;
+      throw error;
     }
     // We can only unlink if there are at least two providers
     if (!user.providers || !(user.providers instanceof Array) || user.providers.length < 2) {
-      throw new Error({
-        error: "Unlink failed",
-        message: "You can't unlink your only provider!",
-        status: 400
-      });
+      let error = new Error("You can't unlink your only provider!");
+      error.name = "Unlink failed";
+      error.status = 400;
+      throw error;
     }
     // We cannot unlink local
     if (provider === "local") {
-      throw new Error({
-        error: "Unlink failed",
-        message: "You can't unlink local.",
-        status: 400
-      });
+      let error = new Error("You can't unlink local.");
+      error.name = "Unlink failed";
+      error.status = 400;
+      throw error;
     }
     // Check that the provider exists
     if (!user[provider] || typeof user[provider] !== "object") {
-      throw new Error({
-        error: "Unlink failed",
-        message: "Provider: " + util.capitalizeFirstLetter(provider) + " not found.",
-        status: 404
-      });
+      let error = new Error("Provider: " + util.capitalizeFirstLetter(provider) + " not found.");
+      error.name = "Unlink failed";
+      error.status = 404;
+      throw error;
     }
     delete user[provider];
     // Remove the unlinked provider from the list of providers
@@ -573,7 +563,8 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
 
   this.createSession = async function(userId, provider, req, refreshToken) {
     // console.log("createSession", Date.now());
-    const permanent = req.body.permanent;
+    req = req || {};
+    const permanent = req.body && req.body.permanent;
     let user = req.user;
     if (!user) {
       user = await this.get(userId);
@@ -739,7 +730,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     };
   };
 
-  this.refreshSession = async function(req, token) {
+  this.refreshSession = async function(req) {
     let user = req.user;
     let newSession = {};
     let newExpires;
@@ -805,11 +796,9 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       await passwordResetForm.validate();
     }
     catch (err) {
-      throw new Error({
-        error: "Validation failed",
-        validationErrors: err,
-        status: 400
-      });
+      let error = new Error("Validation failed");
+      error.validationErrors = err;
+      throw error;
     }
     let tokenHash = util.hashToken(form.token);
     const results = await userDB.query("auth/passwordReset", {key: tokenHash, include_docs: true});
@@ -847,31 +836,25 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
       changePasswordForm.validate();
     }
     catch (err) {
-      throw new Error({
-        error: "Validation failed",
-        validationErrors: err,
-        status: 400
-      });
+      let error = new Error("Validation failed");
+      error.validationErrors = err;
+      throw error;
     }
     const user = await userDB.get(userId);
     if (user.local && user.local.salt && user.local.derived_key) {
       // Password is required
       if (!form.currentPassword) {
-        throw new Error({
-          error: "Password change failed",
-          message: "You must supply your current password in order to change it.",
-          status: 400
-        });
+        let error = new Error("You must supply your current password in order to change it.");
+        error.name = "You must supply your current password in order to change it.";
+        throw error;
       }
       try {
         await util.verifyPassword(user.local, form.currentPassword);
       }
       catch (err) {
-        throw new Error(err || {
-          error: "Password change failed",
-          message: "The current password you supplied is incorrect.",
-          status: 400
-        });
+        let error = new Error("The current password you supplied is incorrect.");
+        error.name = "Password change failed";
+        throw error;
       }
     }
     await self.changePassword(user._id, form.newPassword, user, req);
@@ -910,10 +893,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     let tokenHash;
     const result = await userDB.query("auth/email", {key: email, include_docs: true});
     if (!result.rows.length) {
-      throw new Error({
-        error: "User not found",
-        status: 404
-      });
+      throw new Error("User not found");
     }
     user = result.rows[0].doc;
     token = util.URLSafeUUID();
@@ -941,7 +921,7 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
   this.verifyEmail = async function(token, req) {
     req = req || {};
     let user;
-    const result = userDB.query("auth/verifyEmail", { key: token, include_docs: true });
+    const result = await userDB.query("auth/verifyEmail", { key: token, include_docs: true });
     if (!result.rows.length) {
       return BPromise.reject({error: "Invalid token", status: 400});
     }
@@ -1033,12 +1013,12 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
     }
   };
 
-  this.logoutUser = function(user) {
-    return self.logoutUserSessions(user, "all");
+  this.logoutUser = async function(user) {
+    await self.logoutUserSessions(user, "all");
+    emitter.emit("logout-all", user._id);
   };
 
-  this.logoutSession = async function(user) {
-    let sessionId = user.payload.dbUser;
+  this.logoutSession = async function(user, sessionId) {
     await dbAuth.removeKeys(sessionId);
     await self.logoutUserSessions(user, "expired");
     emitter.emit("logout", user._id);
@@ -1182,30 +1162,37 @@ export default function(config, userDB, couchAuthDB, mailer, emitter) {
   }
 
   // Adds numbers to a base name until it finds a unique database key
-  function generateUsername(base) {
+  async function generateUsername(base) {
+    console.log(base);
     base = base.toLowerCase();
     let entries = [];
     let finalName;
-    return userDB.allDocs({startkey: base, endkey: base + "\uffff", include_docs: false})
-      .then(function(results) {
-        if (results.rows.length === 0) {
-          return BPromise.resolve(base);
-        }
-        for (let i = 0; i < results.rows.length; i++) {
-          entries.push(results.rows[i].id);
-        }
-        if (entries.indexOf(base) === -1) {
-          return BPromise.resolve(base);
-        }
-        let num = 0;
-        while (!finalName) {
-          num++;
-          if (entries.indexOf(base + num) === -1) {
-            finalName = base + num;
-          }
-        }
-        return BPromise.resolve(finalName);
-      });
+    const results = await userDB.allDocs({
+      startkey: base,
+      endkey: base + "\ufff0",
+      include_docs: false
+    });
+    console.log(results);
+    if (results.rows.length === 0) {
+      return base;
+    }
+    results.rows.forEach(e => {
+      console.log(e.id);
+      entries.push(e.id);
+    });
+    console.log(entries);
+    if (entries.indexOf(base) === -1) {
+      return base;
+    }
+    let num = 0;
+    while (!finalName) {
+      num++;
+      if (entries.indexOf(base + num) === -1) {
+        finalName = base + num;
+      }
+    }
+    console.log(finalName);
+    return finalName;
   }
 
   function addUserDBs(newUser) {

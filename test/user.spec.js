@@ -239,7 +239,7 @@ describe("User Model", function() {
   it("should generate a validation error trying to save the same user again", function() {
     return previous.then(function() {
       // console.log('Trying to create the user again');
-      return user.create(testUserForm);
+      return user.create(testUserForm, req);
     })
       .then(function() {
         throw new Error("Validation errors should have been generated");
@@ -256,7 +256,7 @@ describe("User Model", function() {
   });
 
   // eslint-disable-next-line
-  var session, token, refreshToken, firstExpires;
+  var session, token, refreshToken, firstExpires, dbUser;
 
   it("should generate a new session for the user", function() {
     var emitterPromise = new BPromise(function(resolve) {
@@ -277,6 +277,7 @@ describe("User Model", function() {
         refreshToken = result.refreshToken;
         session = result.dbUser;
         firstExpires = result.expires;
+        dbUser = result.dbUser;
         expect(token).to.be.a("string");
         expect(result.userDBs.usertest).to.equal("https://mydb.example.com/test_usertest$superuser");
         return (userDB.get(testUserForm.username));
@@ -334,35 +335,38 @@ describe("User Model", function() {
       });
     });
 
+    console.log(userDB);
+
     return previous
       .then(function() {
         // console.log('Logging out of the session');
-        return user.logoutSession(req.user);
+        return user.logoutSession(req.user, dbUser);
       })
       .then(function() {
-        return user.confirmSession(token);
+        return keysDB.get("org.couchdb.user:" + dbUser);
       })
       .then(function() {
         throw new Error("Failed to log out of session");
       }, function(err) {
-        expect(err).to.equal("invalid token");
-        return (userDB.get(testUserForm.username));
-      })
-      .then(function(user) {
-        expect(user.session[token]).to.be.an("undefined");
+        if (err.error) {
+          expect(err.error).to.equal("not_found");
+        }
+        else {
+          throw err;
+        }
         return emitterPromise;
       });
   });
 
-  it("should have deauthorized the session in the usertest database after logout", function() {
-    return previous
-      .then(function() {
-        return userTestDB.get("_security");
-      })
-      .then(function(secDoc) {
-        expect(secDoc.members.names.length).to.equal(0);
-      });
-  });
+  // it("should have deauthorized the session in the usertest database after logout", function() {
+  //   return previous
+  //     .then(function() {
+  //       return userTestDB.get("_security");
+  //     })
+  //     .then(function(secDoc) {
+  //       expect(secDoc.members.names.length).to.equal(0);
+  //     });
+  // });
 
   it("should log the user out of all sessions", function() {
     var emitterPromise = new BPromise(function(resolve) {
@@ -372,43 +376,18 @@ describe("User Model", function() {
       });
     });
 
-    var sessions = [];
-    var passes = [];
-
     return previous
       .then(function() {
         // console.log('Logging user out completely');
-        return user.createSession(testUserForm.username, null, req);
-      })
-      .then(function(session1) {
-        sessions[0] = session1.token;
-        passes[0] = session1.password;
-        return user.createSession(testUserForm.username, null, req);
-      })
-      .then(function(session2) {
-        sessions[1] = session2.token;
-        passes[1] = session2.password;
-        return user.logoutUser(null, sessions[0]);
+        return user.logoutUser(req.user);
       })
       .then(function() {
-        return BPromise.all([
-          user.confirmSession(sessions[0], passes[0]),
-          user.confirmSession(sessions[1], passes[1])
-        ]);
+        return keysDB.query("_superlogin/user", {
+          key: req.user._id
+        });
       })
       .then(function(results) {
-        throw new Error("Failed to delete user sessions");
-      }, function(error) {
-        expect(error).to.equal("invalid token");
-        return userDB.get(testUserForm.username);
-      })
-      .then(function(user) {
-        expect(user.session).to.be.an("undefined");
-        // Make sure the sessions are deauthorized in the usertest db
-        return userTestDB.get("_security");
-      })
-      .then(function(secDoc) {
-        expect(secDoc.members.names.length).to.equal(0);
+        expect(results.rows.length).to.equal(0);
         return emitterPromise;
       });
   });
@@ -478,13 +457,6 @@ describe("User Model", function() {
 
   it("should not reset the password", function() {
     // eslint-disable-next-line
-    var emitterPromise = new BPromise(function(resolve) {
-      emitter.once("email-changed", function(user) {
-        expect(user._id).to.equal("superuser");
-        resolve();
-      });
-    });
-
     return previous.then(function() {
       // console.log('Resetting the password');
       var form = {
@@ -496,12 +468,13 @@ describe("User Model", function() {
     })
       .then(function() {
         throw new Error("Validation errors should have been generated");
-      })
-      .catch(function(err) {
+      }, function(err) {
+        expect(err.message).to.equal("Validation failed");
         if (err.validationErrors) {
           expect(err.validationErrors.password[0]).to.equal("Password must be at least 8 characters");
         }
         else {
+          console.log("nenenene", err.message);
           throw err;
         }
       });
@@ -679,9 +652,9 @@ describe("User Model", function() {
     return previous
       .then(function() {
         // console.log('Generating username after conflict');
-        userDB.bulkDocs(docs);
+        return userDB.bulkDocs(docs);
       })
-      .then(function() {
+      .then(function(res) {
         return user.socialAuth("facebook", auth, profile, req);
       })
       .then(function(result) {
@@ -725,57 +698,76 @@ describe("User Model", function() {
   });
 
   it("should clean all expired sessions", function() {
-    var now = Date.now();
     var testUser = {
-      _id: "testuser",
-      session: {
-        good1: {
-          expires: now + 100000
-        },
-        bad1: {
-          expires: now - 100000
-        },
-        bad2: {
-          expires: now - 100000
-        }
-      }
+      _id: "testuser"
     };
 
     return previous
       .then(function() {
         // console.log('Cleaning expired sessions');
+        return userDB.bulkDocs([testUser]);
+      })
+      .then(function() {
+        // Create first session
+        return user.createSession(testUser._id);
+      })
+      .then(function(session) {
+        return keysDB.get("org.couchdb.user:" + session.dbUser);
+      })
+      .then(function(doc) {
+        // expire first session
+        doc.expires = 100;
+        return keysDB.put(doc);
+      })
+      .then(function() {
+        // Create second session
+        return user.createSession(testUser._id);
+      })
+      .then(function() {
         return user.logoutUserSessions(testUser, "expired");
       })
-      .then(function(finalDoc) {
-        expect(Object.keys(finalDoc.session).length).to.equal(1);
-        expect(finalDoc.session).to.include.keys("good1");
+      .then(function() {
+        return keysDB.query("_superlogin/user", {
+          key: testUser._id
+        });
+      })
+      .then(function(results) {
+        // there should only be one session left
+        expect(results.rows.length).to.equal(1);
       });
   });
 
   it("should log out of all other sessions", function() {
     var testUser = {
-      _id: "testuser",
-      session: {
-        this1: {},
-        other1: {},
-        other2: {}
-      }
+      _id: "testuser"
     };
+
+    var keepSession;
 
     return previous
       .then(function() {
-        // console.log('Logging out of other sessions');
-        return userDB.put(testUser);
+        // Create first session
+        return user.createSession(testUser._id);
+      })
+      .then(function(session) {
+        keepSession = session.dbUser;
       })
       .then(function() {
-        return user.logoutOthers("this1");
+        // Create second session
+        return user.createSession(testUser._id);
       })
       .then(function() {
-        return userDB.get("testuser");
+        return user.logoutOthers(testUser, keepSession);
       })
-      .then(function(finalDoc) {
-        expect(Object.keys(finalDoc.session).length).to.equal(1);
-        expect(finalDoc.session).to.include.keys("this1");
+      .then(function() {
+        return keysDB.query("_superlogin/user", {
+          key: testUser._id
+        });
+      })
+      .then(function(results) {
+        // the keepSession and the session from above
+        expect(results.rows.length).to.equal(1);
+        expect(results.rows[0].id).to.equal("org.couchdb.user:" + keepSession);
       });
   });
 
@@ -863,8 +855,8 @@ describe("User Model", function() {
       .then(function(newUser) {
         throw new Error({ message: "Should not have created the user!" });
       }, function(err) {
-        if (err.error) {
-          expect(err.error).to.equal("Validation failed");
+        if (err.message) {
+          expect(err.message).to.equal("Validation failed");
         }
         else {
           throw err;
@@ -876,6 +868,7 @@ describe("User Model", function() {
     var finalUrl = dbUrl + "/" + dbname;
     return axios.get(finalUrl).then(function(res) {
       if (res.data.db_name) {
+        console.log(res);
         return BPromise.resolve(true);
       }
     }).catch(function(err) {

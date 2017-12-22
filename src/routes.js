@@ -5,6 +5,7 @@ export default function(config, router, passport, user) {
 
   router.post("/login", function(req, res, next) {
     passport.authenticate("local", function(err, user, info) {
+      console.log("passport error", err);
       if (err) {
         return next(err);
       }
@@ -14,7 +15,7 @@ export default function(config, router, passport, user) {
       }
       // Success
       req.logIn(user, { session: false }, function(err) {
-        // console.log("Passport logged in", Date.now());
+        console.log("Passport logged in", Date.now());
         if (err) {
           return next(err);
         }
@@ -24,7 +25,7 @@ export default function(config, router, passport, user) {
   }, async function(req, res, next) {
     // Success handler
     try {
-      const mySession = await user.createSession("local", req, true);
+      const mySession = await user.createSession(req.user._id, "local", req, true);
       res.status(200).json(mySession);
     }
     catch (err) {
@@ -47,7 +48,7 @@ export default function(config, router, passport, user) {
   router.post("/logout", passport.authenticate("bearer", { session: false }),
     async function(req, res, next) {
       try {
-        await user.logoutSession(req.user);
+        await user.logoutSession(req.user, req.user.payload.dbUser);
         res.status(200).json({
           ok: true,
           success: "Logged out"
@@ -105,7 +106,7 @@ export default function(config, router, passport, user) {
       req.user = newUser;
       if (config.getItem("security.loginOnRegistration")) {
         try {
-          const mySession = await user.createSession("local", req, true);
+          const mySession = await user.createSession(req.user._id, "local", req, true);
           res.status(200).json(mySession);
         }
         catch (err) {
@@ -139,7 +140,7 @@ export default function(config, router, passport, user) {
       await user.resetPassword(req.body, req);
       if (config.getItem("security.loginOnPasswordReset")) {
         try {
-          const mySession = await user.createSession("local", req);
+          const mySession = await user.createSession(req.user._id, "local", req);
           res.status(200).json(mySession);
         }
         catch (err) {

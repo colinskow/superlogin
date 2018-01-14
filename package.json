@@ -34,7 +34,7 @@
   "homepage": "https://github.com/colinskow/superlogin",
   "dependencies": {
     "bluebird": "^3.3.4",
-    "couch-pwd": "github:zeMirco/couch-pwd",
+    "couch-pwd-updated": "git+https://github.com/aphixsoftware/couch-pwd-updated.git",
     "ejs": "^2.3.1",
     "express": "^4.13.3",
     "extend": "^3.0.0",
@@ -44,11 +44,12 @@
     "passport": "^0.3.2",
     "passport-http-bearer-sl": "^1.0.1",
     "passport-local": "^1.0.0",
-    "pouchdb": "~6.3.4",
+    "pouchdb": "~5.4.5",
     "pouchdb-seed-design": "^0.2.0",
     "redis": "^2.5.2",
     "sofa-model": "^0.2.0",
     "superagent": "^1.2.0",
+    "url-parse": "^1.2.0",
     "urlsafe-base64": "1.0.0",
     "uuid": "^3.0.0"
   },

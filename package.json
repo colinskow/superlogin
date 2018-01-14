@@ -49,6 +49,7 @@
     "redis": "^2.5.2",
     "sofa-model": "^0.2.0",
     "superagent": "^1.2.0",
+    "url-parse": "^1.2.0",
     "urlsafe-base64": "1.0.0",
     "uuid": "^3.0.0"
   },

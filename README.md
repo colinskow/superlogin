@@ -1,5 +1,7 @@
 # SuperLogin
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/SteffenDE/superlogin-jwt.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/colinskow/superlogin.png?branch=master)](https://travis-ci.org/colinskow/superlogin)
 
 SuperLogin is a full-featured NodeJS/Express user authentication solution for APIs and Single Page Apps (SPA) using CouchDB.

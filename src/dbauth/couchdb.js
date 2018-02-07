@@ -1,20 +1,19 @@
-'use strict';
-var BPromise = require('bluebird');
-var util = require('../util');
+import BPromise from "bluebird";
+import * as util from "../util";
 
-module.exports = function(couchAuthDB) {
-
-  this.storeKey = function (username, key, password, expires, roles) {
-    if(roles instanceof Array) {
+export default function(couchAuthDB) {
+  this.storeKey = function(username, key, password, expires, roles) {
+    if (roles instanceof Array) {
       // Clone roles to not overwrite original
       roles = roles.slice(0);
-    } else {
+    }
+    else {
       roles = [];
     }
-    roles.unshift('user:' + username);
+    roles.unshift("user:" + username);
     var newKey = {
-      _id: 'org.couchdb.user:' + key,
-      type: 'user',
+      _id: "org.couchdb.user:" + key,
+      type: "user",
       name: key,
       user_id: username,
       password: password,
@@ -22,7 +21,7 @@ module.exports = function(couchAuthDB) {
       roles: roles
     };
     return couchAuthDB.put(newKey)
-      .then(function () {
+      .then(function() {
         newKey._id = key;
         return BPromise.resolve(newKey);
       });
@@ -33,13 +32,14 @@ module.exports = function(couchAuthDB) {
     var keylist = [];
     // Transform the list to contain the CouchDB _user ids
     keys.forEach(function(key) {
-      keylist.push('org.couchdb.user:' + key);
+      keylist.push("org.couchdb.user:" + key);
     });
     var toDelete = [];
     return couchAuthDB.allDocs({keys: keylist})
       .then(function(keyDocs) {
+        console.log(keylist, keyDocs);
         keyDocs.rows.forEach(function(row) {
-          if(!row.error && !row.value.deleted) {
+          if (!row.error && !row.value.deleted) {
             var deletion = {
               _id: row.id,
               _rev: row.value.rev,
@@ -48,9 +48,10 @@ module.exports = function(couchAuthDB) {
             toDelete.push(deletion);
           }
         });
-        if(toDelete.length) {
+        if (toDelete.length) {
           return couchAuthDB.bulkDocs(toDelete);
-        } else {
+        }
+        else {
           return BPromise.resolve(false);
         }
       });
@@ -58,8 +59,8 @@ module.exports = function(couchAuthDB) {
 
   this.initSecurity = function(db, adminRoles, memberRoles) {
     var changes = false;
-    return db.get('_security')
-      .then(function (secDoc) {
+    return db.get("_security")
+      .then(function(secDoc) {
         if (!secDoc.admins) {
           secDoc.admins = {names: [], roles: []};
         }
@@ -73,29 +74,30 @@ module.exports = function(couchAuthDB) {
           secDoc.admins.roles = [];
         }
         adminRoles.forEach(function(role) {
-          if(secDoc.admins.roles.indexOf(role) === -1) {
+          if (secDoc.admins.roles.indexOf(role) === -1) {
             changes = true;
             secDoc.admins.roles.push(role);
           }
         });
         memberRoles.forEach(function(role) {
-          if(secDoc.members.roles.indexOf(role) === -1) {
+          if (secDoc.members.roles.indexOf(role) === -1) {
             changes = true;
             secDoc.members.roles.push(role);
           }
         });
-        if(changes) {
+        if (changes) {
           return putSecurityCouch(db, secDoc);
-        } else {
+        }
+        else {
           return BPromise.resolve(false);
         }
       });
   };
 
-  this.authorizeKeys = function (user_id, db, keys) {
+  this.authorizeKeys = function(userId, db, keys) {
     var secDoc;
     // Check if keys is an object and convert it to an array
-    if(typeof keys === 'object' && !(keys instanceof Array)) {
+    if (typeof keys === "object" && !(keys instanceof Array)) {
       var keysArr = [];
       Object.keys(keys).forEach(function(theKey) {
         keysArr.push(theKey);
@@ -104,8 +106,8 @@ module.exports = function(couchAuthDB) {
     }
     // Convert keys to an array if it is just a string
     keys = util.toArray(keys);
-    return db.get('_security')
-      .then(function (doc) {
+    return db.get("_security")
+      .then(function(doc) {
         secDoc = doc;
         if (!secDoc.members) {
           secDoc.members = {names: [], roles: []};
@@ -114,7 +116,7 @@ module.exports = function(couchAuthDB) {
           secDoc.members.names = [];
         }
         var changes = false;
-        keys.forEach(function (key) {
+        keys.forEach(function(key) {
           var index = secDoc.members.names.indexOf(key);
           if (index === -1) {
             secDoc.members.names.push(key);
@@ -123,23 +125,24 @@ module.exports = function(couchAuthDB) {
         });
         if (changes) {
           return putSecurityCouch(db, secDoc);
-        } else {
+        }
+        else {
           return BPromise.resolve(false);
         }
       });
   };
 
-  this.deauthorizeKeys = function (db, keys) {
+  this.deauthorizeKeys = function(db, keys) {
     var secDoc;
     keys = util.toArray(keys);
-    return db.get('_security')
-      .then(function (doc) {
+    return db.get("_security")
+      .then(function(doc) {
         secDoc = doc;
         if (!secDoc.members || !secDoc.members.names) {
           return BPromise.resolve(false);
         }
         var changes = false;
-        keys.forEach(function (key) {
+        keys.forEach(function(key) {
           var index = secDoc.members.names.indexOf(key);
           if (index > -1) {
             secDoc.members.names.splice(index, 1);
@@ -148,7 +151,8 @@ module.exports = function(couchAuthDB) {
         });
         if (changes) {
           return putSecurityCouch(db, secDoc);
-        } else {
+        }
+        else {
           return BPromise.resolve(false);
         }
       });
@@ -156,13 +160,11 @@ module.exports = function(couchAuthDB) {
 
   function putSecurityCouch(db, doc) {
     return db.request({
-      method: 'PUT',
-      url: '_security',
+      method: "PUT",
+      url: "_security",
       body: doc
     });
   }
 
   return this;
-
 };
-

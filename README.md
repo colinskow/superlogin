@@ -1,8 +1,12 @@
 # SuperLogin
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/SteffenDE/superlogin-jwt.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/colinskow/superlogin.png?branch=master)](https://travis-ci.org/colinskow/superlogin)
 
-SuperLogin is a full-featured NodeJS/Express user authentication solution for APIs and Single Page Apps (SPA) using CouchDB or Cloudant.
+SuperLogin is a full-featured NodeJS/Express user authentication solution for APIs and Single Page Apps (SPA) using CouchDB.
+
+## This is currently being rewritten using [JWT](https://jwt.io/). Things may not work as expected.
 
 User authentication is often the hardest part of building any web app, especially if you want to integrate multiple providers. Now all the tough work has been done for you so you can relax and create with less boilerplate!
 

@@ -12,8 +12,18 @@
         var session = <%- JSON.stringify(session) %>;
         var error = <%- JSON.stringify(error) %>;
         var link = <%- JSON.stringify(link) %>;
-        if (window.opener.superlogin && window.opener.superlogin.oauthSession) {
-            window.opener.superlogin.oauthSession(error, session, link);
+        try {
+            if (window.opener.superlogin && window.opener.superlogin.oauthSession) {
+                window.opener.superlogin.oauthSession(error, session, link);
+            }
+        }
+        catch(err) {
+            window.opener.postMessage({
+                type: 'oauthSession',
+                session: session,
+                error: error,
+                link: link
+            }, '*'); // original referer would be better
         }
     }
     window.close();

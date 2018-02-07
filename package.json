@@ -1,17 +1,19 @@
 {
-  "name": "superlogin",
-  "version": "0.6.1",
+  "name": "superlogin-jwt",
+  "version": "0.1.2",
   "description": "Powerful authentication for APIs and single page apps using the CouchDB ecosystem which supports a variety of providers.",
   "main": "./lib/index.js",
+  "scripts": {
+    "build": "node node_modules/webpack/bin/webpack.js",
+    "prepare": "npm run build",
+    "test": "gulp"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/colinskow/superlogin.git"
+    "url": "https://github.com/SteffenDE/superlogin-jwt.git"
   },
   "engines": {
     "node": ">=4.0.0"
-  },
-  "scripts": {
-    "test": "gulp"
   },
   "keywords": [
     "authentication",
@@ -26,44 +28,50 @@
     "Node",
     "Express"
   ],
-  "author": "Colin Skow",
+  "author": "Steffen Deusch",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/colinskow/superlogin/issues"
+    "url": "https://github.com/SteffenDE/superlogin-jwt/issues"
   },
-  "homepage": "https://github.com/colinskow/superlogin",
+  "homepage": "https://github.com/SteffenDE/superlogin-jwt",
   "dependencies": {
-    "bluebird": "^3.3.4",
+    "axios": "^0.17.1",
+    "bluebird": "^3.5.1",
     "couch-pwd": "github:zeMirco/couch-pwd",
-    "ejs": "^2.3.1",
-    "express": "^4.13.3",
-    "extend": "^3.0.0",
-    "fs-extra": "^0.30.0",
-    "nodemailer": "^2.3.0",
-    "nodemailer-stub-transport": "^1.0.0",
-    "passport": "^0.3.2",
-    "passport-http-bearer-sl": "^1.0.1",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "jsonwebtoken": "^8.1.0",
+    "lodash": "^4.17.4",
+    "ms": "^2.0.0",
+    "nodemailer": "^4.2.0",
+    "nodemailer-stub-transport": "^1.1.0",
+    "passport": "^0.4.0",
+    "passport-http-bearer-sl": "^1.0.4",
     "passport-local": "^1.0.0",
-    "pouchdb": "~6.3.4",
-    "pouchdb-seed-design": "^0.2.0",
-    "redis": "^2.5.2",
+    "pouchdb-adapter-http": "^6.4.1",
+    "pouchdb-core": "^6.4.3",
+    "pouchdb-mapreduce": "^6.4.1",
+    "pouchdb-seed-design": "github:SteffenDE/pouchdb-seed-design",
     "sofa-model": "^0.2.0",
-    "superagent": "^1.2.0",
     "urlsafe-base64": "1.0.0",
-    "uuid": "^3.0.0"
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
-    "body-parser": "^1.9.2",
-    "chai": "^3.5.0",
-    "gulp": "^3.8.6",
-    "gulp-jshint": "^2.0.0",
-    "gulp-mocha": "^2.2.0",
-    "jshint": "^2.9.1",
-    "jshint-stylish": "^2.1.0",
-    "mocha": "^2.4.5",
-    "morgan": "^1.5.2",
-    "rimraf": "^2.5.2",
-    "sinon": "^1.17.4",
-    "sinon-chai": "^2.8.0"
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "body-parser": "^1.18.2",
+    "chai": "^4.1.2",
+    "eslint": "^4.13.1",
+    "eslint-loader": "^1.9.0",
+    "gulp": "^3.9.1",
+    "gulp-eslint": "^4.0.0",
+    "gulp-mocha": "^5.0.0",
+    "mocha": "^5.0.0",
+    "morgan": "^1.9.0",
+    "rimraf": "^2.6.2",
+    "sinon": "^4.0.1",
+    "sinon-chai": "^2.14.0",
+    "webpack": "^3.10.0"
   }
 }

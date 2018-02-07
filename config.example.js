@@ -20,17 +20,21 @@ module.exports = {
     // Maximum number of failed logins before the account is locked
     maxFailedLogins: 3,
     // The amount of time the account will be locked for (in seconds) after the maximum failed logins is exceeded
-    lockoutTime: 600,
+    lockoutTime: "600s",
     // The amount of time a new session is valid for (default: 24 hours)
-    sessionLife: 86400,
+    sessionLife: "1d",
     // The amount of time a password reset token is valid for
-    tokenLife: 86400,
+    tokenLife: "1d",
     // The maximum number of entries in the activity log in each user doc. Zero to disable completely
     userActivityLogSize: 10,
     // If set to true, the user will be logged in automatically after registering
     loginOnRegistration: false,
     // If set to true, the user will be logged in automatically after resetting the password
-    loginOnPasswordReset: false
+    loginOnPasswordReset: false,
+    jwt: {
+      issuer: "https://api.example.com",
+      secret: "changeme"
+    }
   },
   local: {
     // Send out a confirm email after each user signs up with local login

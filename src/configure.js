@@ -1,14 +1,12 @@
-'use strict';
-var util = require('./util');
+import * as util from "./util";
 
-module.exports = function(data, defaults) {
-
+export default function(data, defaults) {
   this.config = data || {};
   this.defaults = defaults || {};
 
   this.getItem = function(key) {
     var result = util.getObjectRef(this.config, key);
-    if(typeof result === 'undefined' || result === null) {
+    if (typeof result === "undefined" || result === null) {
       result = util.getObjectRef(this.defaults, key);
     }
     return result;
@@ -21,5 +19,4 @@ module.exports = function(data, defaults) {
   this.removeItem = function(key) {
     return util.delObjectRef(this.config, key);
   };
-
 };

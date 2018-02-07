@@ -1,23 +1,21 @@
-'use strict';
-var expect = require('chai').expect;
-var Middleware = require('../lib/middleware');
+"use strict";
+var expect = require("chai").expect;
+var Middleware = require("../src/middleware").default;
 
 var middleware = new Middleware({});
 
-var noCall = function(){
-  throw new Error('This should not have been called.');
+var noCall = function() {
+  throw new Error("This should not have been called.");
 };
 
-var noop = function(){};
+var noop = function() {};
 
-describe('middleware', function() {
-
-  describe('requireRole', function() {
-
-    it('should pass when a required role is present', function(done) {
+describe("middleware", function() {
+  describe("requireRole", function() {
+    it("should pass when a required role is present", function(done) {
       var req = {
         user: {
-          roles: ['user']
+          roles: ["user"]
         }
       };
       var res = {
@@ -27,13 +25,13 @@ describe('middleware', function() {
       var next = function() {
         done();
       };
-      middleware.requireRole('user')(req, res, next);
+      middleware.requireRole("user")(req, res, next);
     });
 
-    it('should fail when a required role is missing', function(done) {
+    it("should fail when a required role is missing", function(done) {
       var req = {
         user: {
-          roles: ['user']
+          roles: ["user"]
         }
       };
       var res = {
@@ -43,16 +41,15 @@ describe('middleware', function() {
         },
         json: noop
       };
-      middleware.requireRole('admin')(req, res, noCall);
+      middleware.requireRole("admin")(req, res, noCall);
     });
   });
 
-  describe('requireAnyRole', function() {
-
-    it('should pass when at least one of the required roles is present', function(done) {
+  describe("requireAnyRole", function() {
+    it("should pass when at least one of the required roles is present", function(done) {
       var req = {
         user: {
-          roles: ['user']
+          roles: ["user"]
         }
       };
       var res = {
@@ -62,13 +59,13 @@ describe('middleware', function() {
       var next = function() {
         done();
       };
-      middleware.requireAnyRole(['user', 'admin'])(req, res, next);
+      middleware.requireAnyRole(["user", "admin"])(req, res, next);
     });
 
-    it('should fail when no required role is present', function(done) {
+    it("should fail when no required role is present", function(done) {
       var req = {
         user: {
-          roles: ['user']
+          roles: ["user"]
         }
       };
       var res = {
@@ -78,16 +75,15 @@ describe('middleware', function() {
         },
         json: noop
       };
-      middleware.requireAnyRole(['admin', 'superman'])(req, res, noCall);
+      middleware.requireAnyRole(["admin", "superman"])(req, res, noCall);
     });
   });
 
-  describe('requireAllRoles', function() {
-
-    it('should pass when all of the roles are present', function(done) {
+  describe("requireAllRoles", function() {
+    it("should pass when all of the roles are present", function(done) {
       var req = {
         user: {
-          roles: ['user', 'admin', 'superman']
+          roles: ["user", "admin", "superman"]
         }
       };
       var res = {
@@ -97,13 +93,13 @@ describe('middleware', function() {
       var next = function() {
         done();
       };
-      middleware.requireAllRoles(['user', 'admin'])(req, res, next);
+      middleware.requireAllRoles(["user", "admin"])(req, res, next);
     });
 
-    it('should fail when just one required role is missing', function(done) {
+    it("should fail when just one required role is missing", function(done) {
       var req = {
         user: {
-          roles: ['user', 'admin']
+          roles: ["user", "admin"]
         }
       };
       var res = {
@@ -113,10 +109,7 @@ describe('middleware', function() {
         },
         json: noop
       };
-      middleware.requireAllRoles(['admin', 'superman'])(req, res, noCall);
+      middleware.requireAllRoles(["admin", "superman"])(req, res, noCall);
     });
   });
-
-
-
 });

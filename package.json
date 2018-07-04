@@ -46,9 +46,9 @@
     "passport-local": "^1.0.0",
     "pouchdb": "^7.0.0",
     "pouchdb-seed-design": "^0.3.0",
-    "redis": "^2.5.2",
+    "redis": "^2.8.0",
     "sofa-model": "^0.2.0",
-    "superagent": "^1.2.0",
+    "superagent": "^3.8.3",
     "urlsafe-base64": "1.0.0",
     "uuid": "^3.0.0"
   },

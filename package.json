@@ -5,7 +5,7 @@
     "main": "./lib/index.js",
     "repository": {
         "type": "git",
-        "url": "https://github.com/colinskow/superlogin.git"
+        "url": "https://github.com/LyteFM/superlogin.git"
     },
     "engines": {
         "node": ">=8.0.0"
@@ -29,9 +29,9 @@
     "author": "Colin Skow",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/colinskow/superlogin/issues"
+        "url": "https://github.com/LyteFM/superlogin/issues"
     },
-    "homepage": "https://github.com/colinskow/superlogin",
+    "homepage": "https://github.com/LyteFM/superlogin",
     "dependencies": {
         "bluebird": "^3.5.1",
         "couch-pwd": "github:zeMirco/couch-pwd",

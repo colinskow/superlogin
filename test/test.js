@@ -77,7 +77,7 @@ describe('SuperLogin', function() {
             expect(res.body.success).to.equal('User created.');
             // console.log('User created');
             return Promise.resolve();
-        })
+        });
     });
   });
 
@@ -197,7 +197,7 @@ describe('SuperLogin', function() {
                 expect(res.status).to.equal(200);
                 // console.log('Password successfully reset.');
                 resolve();
-              })
+              });
           });
         });
     });
@@ -237,7 +237,7 @@ describe('SuperLogin', function() {
           })
           .catch(err => {
             return reject('Failed to log in. ' + err);
-          })
+          });
       });
     });
   });
@@ -271,7 +271,7 @@ describe('SuperLogin', function() {
                 expect(res.status).to.equal(200);
                 // console.log('Password successfully changed.');
                 resolve();
-              })
+              });
           });
         });
     });

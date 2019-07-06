@@ -851,16 +851,14 @@ describe('User Model', function() {
 
   function checkDBExists(dbname) {
     var finalUrl = dbUrl + '/' + dbname;
-    return BPromise.fromCallback(function(callback) {
-      request.get(finalUrl)
-        .end(callback);
-    })
-      .then(function(res) {
+    return request.get(finalUrl)
+      .then(res => {
         var result = JSON.parse(res.text);
         if(result.db_name) {
           return Promise.resolve(true);
         }
-      }, function(err) {
+      })
+      .catch(err => {
         if(err.status === 404) {
           return Promise.resolve(false);
         }

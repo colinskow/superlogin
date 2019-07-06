@@ -68,19 +68,16 @@ describe('SuperLogin', function() {
   });
 
   it('should create a new user', function() {
-    return previous.then(function() {
-      return new Promise(function(resolve, reject) {
-        request
+    return previous.then(() => {
+      return request
           .post(server + '/auth/register')
           .send(newUser)
-          .end(function(err, res) {
-            if (err) return reject(err);
+          .then(res => {
             expect(res.status).to.equal(201);
             expect(res.body.success).to.equal('User created.');
             // console.log('User created');
-            resolve();
-          });
-      });
+            return Promise.resolve();
+        })
     });
   });
 
@@ -93,38 +90,32 @@ describe('SuperLogin', function() {
           return 1;
         })
         .then(function() {
-          return new Promise(function(resolve, reject) {
-            request
+          return request
               .get(server + '/auth/confirm-email/' + emailToken)
-              .end(function(err, res) {
-                if (err) return reject(err);
+              .then( res => {
                 expect(res.status).to.equal(200);
                 // console.log('Email successfully verified.');
-                resolve();
+                return Promise.resolve();
               });
           });
         });
-    });
   });
 
   it('should login the user', function() {
     return previous.then(function() {
-      return new Promise(function(resolve, reject) {
-        request
-          .post(server + '/auth/login')
-          .send({ username: newUser.username, password: newUser.password })
-          .end(function(err, res) {
-            if (err) return reject(err);
-            accessToken = res.body.token;
-            accessPass = res.body.password;
-            expect(res.status).to.equal(200);
-            expect(res.body.roles[0]).to.equal('user');
-            expect(res.body.token.length).to.be.above(10);
-            expect(res.body.profile.name).to.equal(newUser.name);
-            // console.log('User successfully logged in');
-            resolve();
-          });
-      });
+      return request
+        .post(server + '/auth/login')
+        .send({ username: newUser.username, password: newUser.password })
+        .then( res => {
+          accessToken = res.body.token;
+          accessPass = res.body.password;
+          expect(res.status).to.equal(200);
+          expect(res.body.roles[0]).to.equal('user');
+          expect(res.body.token.length).to.be.above(10);
+          expect(res.body.profile.name).to.equal(newUser.name);
+          // console.log('User successfully logged in');
+          return Promise.resolve();
+        });
     });
   });
 
@@ -134,8 +125,7 @@ describe('SuperLogin', function() {
         request
           .get(server + '/auth/session')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .end(function(err, res) {
-            if (err) return reject(err);
+          .then( res => {
             expect(res.status).to.equal(200);
             // console.log('Secure endpoint successfully accessed.');
             resolve();
@@ -150,8 +140,7 @@ describe('SuperLogin', function() {
         request
           .get(server + '/user')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .end(function(err, res) {
-            if (err) return reject(err);
+          .then( res => {
             expect(res.status).to.equal(200);
             // console.log('Role successfully required.');
             resolve();
@@ -166,7 +155,7 @@ describe('SuperLogin', function() {
         request
           .get(server + '/admin')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .end(function(err, res) {
+          .then( res => {
             //if (err) return reject(err);
             expect(res.status).to.equal(403);
             // console.log('Admin access successfully denied.');
@@ -184,8 +173,7 @@ describe('SuperLogin', function() {
         request
           .post(server + '/auth/forgot-password')
           .send({email: newUser.email})
-          .end(function(err, res) {
-            if (err) return reject(err);
+          .then(res => {
             expect(res.status).to.equal(200);
             // keep unhashed token emailed to user.
             var sendEmailArgs = spySendMail.getCall(0).args;
@@ -200,19 +188,16 @@ describe('SuperLogin', function() {
   it('should reset the password', function() {
     return previous.then(function() {
       return userDB.get(newUser.username)
-        .then(function(resetUser) {
+        .then(() => {
           return new Promise(function(resolve, reject) {
             request
               .post(server + '/auth/password-reset')
               .send({token: resetToken, password: 'newpass', confirmPassword: 'newpass'})
-              .end(function(error, res) {
-                if(error || res.status !== 200) {
-                  throw new Error('Failed to reset the password.');
-                }
+              .then(res => {
                 expect(res.status).to.equal(200);
                 // console.log('Password successfully reset.');
                 resolve();
-              });
+              })
           });
         });
     });
@@ -224,7 +209,7 @@ describe('SuperLogin', function() {
         request
           .get(server + '/auth/session')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .end(function(err, res) {
+          .then(res => {
             //if (err) return reject(err);
             expect(res.status).to.equal(401);
             // console.log('User has been successfully logged out on password reset.');
@@ -240,8 +225,7 @@ describe('SuperLogin', function() {
         request
           .post(server + '/auth/login')
           .send({ username: newUser.username, password: 'newpass' })
-          .end(function(err, res) {
-            if (err) return reject('Failed to log in. ' + err);
+          .then(res => {
             accessToken = res.body.token;
             accessPass = res.body.password;
             expireCompare = res.body.expires;
@@ -250,7 +234,10 @@ describe('SuperLogin', function() {
             expect(res.body.token.length).to.be.above(10);
             // console.log('User successfully logged in with new password');
             resolve();
-          });
+          })
+          .catch(err => {
+            return reject('Failed to log in. ' + err);
+          })
       });
     });
   });
@@ -261,8 +248,7 @@ describe('SuperLogin', function() {
         request
           .post(server + '/auth/refresh')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .end(function(err, res) {
-            if (err) return reject(err);
+          .then(res => {
             expect(res.status).to.equal(200);
             expect(res.body.expires).to.be.above(expireCompare);
             // console.log('Session successfully refreshed.');
@@ -281,14 +267,11 @@ describe('SuperLogin', function() {
               .post(server + '/auth/password-change')
               .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
               .send({currentPassword: 'newpass', newPassword: 'newpass2', confirmPassword: 'newpass2'})
-              .end(function(error, res) {
-                if(error || res.status !== 200) {
-                  throw new Error('Failed to change the password.');
-                }
+              .then(res => {
                 expect(res.status).to.equal(200);
                 // console.log('Password successfully changed.');
                 resolve();
-              });
+              })
           });
         });
     });

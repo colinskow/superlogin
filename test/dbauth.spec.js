@@ -277,10 +277,7 @@ describe('DBAuth', function() {
 
 function checkDBExists(dbname) {
   var finalUrl = dbUrl + '/' + dbname;
-  return BPromise.fromNode(function(callback) {
-    request.get(finalUrl)
-      .end(callback);
-  })
+  return request.get(finalUrl)
     .then(function(res) {
       var result = JSON.parse(res.text);
       if(result.db_name) {

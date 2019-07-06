@@ -41,6 +41,10 @@ module.exports = {
     confirmEmailRedirectURL: '/',
     // Set this to true to disable usernames and use emails instead
     emailUsername: false,
+    // Also return the username and UUID when creating a session
+    sendNameAndUUID: false,
+    // If a number is set here, the token for password reset will be shortened to that length (e.g. 8)
+    tokenLengthOnReset: false
     // Custom names for the username and password fields in your sign-in form
     usernameField: 'user',
     passwordField: 'pass',

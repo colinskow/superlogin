@@ -48,7 +48,7 @@ function runTest(config, adapter) {
   var session = new Session(config);
   var previous;
 
-  return new BPromise(function(resolve, reject) {
+  return new Promise(function(resolve, reject) {
 
     describe(adapter, function() {
 

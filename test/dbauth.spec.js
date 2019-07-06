@@ -62,7 +62,7 @@ describe('DBAuth', function() {
   });
 
   it('should generate a database access key', function() {
-    previous = BPromise.resolve();
+    previous = Promise.resolve();
     return previous
       .then(function() {
         return seed(userDB, userDesign);
@@ -205,14 +205,14 @@ describe('DBAuth', function() {
         promises.push(dbAuth.storeKey('testuser1', 'goodkey1', 'password', user1.session.goodkey1.expires));
         promises.push(dbAuth.storeKey('testuser2', 'oldkey2', 'password', user2.session.oldkey2.expires));
         promises.push(dbAuth.storeKey('testuser2', 'goodkey2', 'password', user2.session.goodkey2.expires));
-        return BPromise.all(promises);
+        return Promise.all(promises);
       })
       .then(function() {
         // Now we will expire the keys
         var promises = [];
         promises.push(userDB.get('testuser1'));
         promises.push(userDB.get('testuser2'));
-        return BPromise.all(promises);
+        return Promise.all(promises);
       })
       .then(function(docs) {
         docs[0].session.oldkey1.expires = 100;
@@ -234,7 +234,7 @@ describe('DBAuth', function() {
         promises.push(keysDB.get('org.couchdb.user:goodkey2'));
         promises.push(db1.get('_security'));
         promises.push(db2.get('_security'));
-        return BPromise.all(promises);
+        return Promise.all(promises);
       })
       .then(function(docs) {
         // Sessions for old keys should have been deleted, unexpired keys should be there
@@ -262,14 +262,14 @@ describe('DBAuth', function() {
         expect(results[1].isRejected()).to.be.true;
         /* jshint +W030 */
         // Finally clean up
-        return BPromise.all([db1.destroy(), db2.destroy()]);
+        return Promise.all([db1.destroy(), db2.destroy()]);
       });
   });
 
   it('should cleanup databases', function() {
     return previous
       .finally(function() {
-        return BPromise.all([userDB.destroy(), keysDB.destroy(), testDB.destroy()]);
+        return Promise.all([userDB.destroy(), keysDB.destroy(), testDB.destroy()]);
       });
   });
 
@@ -284,11 +284,11 @@ function checkDBExists(dbname) {
     .then(function(res) {
       var result = JSON.parse(res.text);
       if(result.db_name) {
-        return BPromise.resolve(true);
+        return Promise.resolve(true);
       }
     }, function(err) {
       if(err.status === 404) {
-        return BPromise.resolve(false);
+        return Promise.resolve(false);
       }
     });
 }

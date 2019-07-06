@@ -1,6 +1,5 @@
 'use strict';
 var PouchDB = require('pouchdb');
-var BPromise = require('bluebird');
 var expect = require('chai').expect;
 var cloudant = require('../lib/dbauth/cloudant');
 
@@ -12,7 +11,7 @@ describe('Cloudant', function() {
 
   var apiKey;
 
-  previous = BPromise.resolve();
+  previous = Promise.resolve();
 
   before(function() {
     return previous.then(function() {
@@ -25,7 +24,7 @@ describe('Cloudant', function() {
     this.timeout(5000);
     return previous.finally(function() {
       return testDB.destroy();
-      // return BPromise.resolve();
+      // return Promise.resolve();
     });
   });
 

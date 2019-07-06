@@ -136,7 +136,7 @@ describe('User Model', function() {
     // console.log('Seeding design docs');
     var userDesign = require('../designDocs/user-design');
     userDesign = util.addProvidersToDesignDoc(userConfig, userDesign);
-    previous = BPromise.resolve();
+    previous = Promise.resolve();
 
     return previous.then(function() {
       return seed(userDB, userDesign);
@@ -150,13 +150,13 @@ describe('User Model', function() {
       var userTestDB2 = new PouchDB(dbUrl + "/test_usertest$misterx");
       var userTestDB3 = new PouchDB(dbUrl + "/test_usertest$misterx3");
       var userTestDB4 = new PouchDB(dbUrl + "/test_superdb");
-      return BPromise.all([userDB.destroy(), keysDB.destroy(), userTestDB1.destroy(), userTestDB2.destroy(), userTestDB3.destroy(), userTestDB4.destroy()]);
+      return Promise.all([userDB.destroy(), keysDB.destroy(), userTestDB1.destroy(), userTestDB2.destroy(), userTestDB3.destroy(), userTestDB4.destroy()]);
     });
   });
 
   it('should save a new user', function() {
     // console.log('Creating User');
-    var emitterPromise = new BPromise(function(resolve) {
+    var emitterPromise = new Promise(function(resolve) {
       emitter.once('signup', function(user) {
         expect(user._id).to.equal('superuser');
         resolve();
@@ -166,11 +166,11 @@ describe('User Model', function() {
     return previous.then(function() {
       user.onCreate(function(userDoc) {
         userDoc.onCreate1 = true;
-        return BPromise.resolve(userDoc);
+        return Promise.resolve(userDoc);
       });
       user.onCreate(function(userDoc) {
         userDoc.onCreate2 = true;
-        return BPromise.resolve(userDoc);
+        return Promise.resolve(userDoc);
       });
       return user.create(testUserForm, req);
     })
@@ -247,7 +247,7 @@ describe('User Model', function() {
   var sessionKey, sessionPass, firstExpires;
 
   it('should generate a new session for the user', function() {
-    var emitterPromise = new BPromise(function(resolve) {
+    var emitterPromise = new Promise(function(resolve) {
       emitter.once('login', function(session) {
         expect(session.user_id).to.equal('superuser');
         resolve();
@@ -287,7 +287,7 @@ describe('User Model', function() {
   });
 
   it('should refresh a session', function() {
-    var emitterPromise = new BPromise(function(resolve) {
+    var emitterPromise = new Promise(function(resolve) {
       emitter.once('refresh', function(session) {
         expect(session.user_id).to.equal('superuser');
         resolve();
@@ -306,7 +306,7 @@ describe('User Model', function() {
   });
 
   it('should log out of a session', function() {
-    var emitterPromise = new BPromise(function(resolve) {
+    var emitterPromise = new Promise(function(resolve) {
       emitter.once('logout', function(user_id) {
         expect(user_id).to.equal('superuser');
         resolve();
@@ -344,7 +344,7 @@ describe('User Model', function() {
   });
 
   it('should log the user out of all sessions', function() {
-    var emitterPromise = new BPromise(function(resolve) {
+    var emitterPromise = new Promise(function(resolve) {
       emitter.once('logout-all', function(user_id) {
         expect(user_id).to.equal('superuser');
         resolve();
@@ -370,7 +370,7 @@ describe('User Model', function() {
         return user.logoutUser(null, sessions[0]);
       })
       .then(function() {
-        return BPromise.all([
+        return Promise.all([
           user.confirmSession(sessions[0], passes[0]),
           user.confirmSession(sessions[1], passes[1])
         ]);
@@ -393,7 +393,7 @@ describe('User Model', function() {
   });
 
   it('should verify the email', function() {
-    var emitterPromise = new BPromise(function(resolve) {
+    var emitterPromise = new Promise(function(resolve) {
       emitter.once('email-verified', function(user) {
         expect(user._id).to.equal('superuser');
         resolve();
@@ -418,7 +418,7 @@ describe('User Model', function() {
   var resetTokenHashed;
 
   it('should generate a password reset token', function() {
-    var emitterPromise = new BPromise(function(resolve) {
+    var emitterPromise = new Promise(function(resolve) {
       emitter.once('forgot-password', function(user) {
         expect(user._id).to.equal('superuser');
         resolve();
@@ -456,7 +456,7 @@ describe('User Model', function() {
   });
 
   it('should not reset the password', function() {
-      var emitterPromise = new BPromise(function(resolve) {
+      var emitterPromise = new Promise(function(resolve) {
         emitter.once('email-changed', function(user) {
           expect(user._id).to.equal('superuser');
           resolve();
@@ -485,7 +485,7 @@ describe('User Model', function() {
   });
 
   it('should reset the password', function() {
-    var emitterPromise = new BPromise(function (resolve) {
+    var emitterPromise = new Promise(function (resolve) {
       emitter.once('password-reset', function (user) {
         expect(user._id).to.equal('superuser');
         resolve();
@@ -518,7 +518,7 @@ describe('User Model', function() {
   });
 
   it('should change the password', function() {
-    var emitterPromise = new BPromise(function(resolve) {
+    var emitterPromise = new Promise(function(resolve) {
       emitter.once('password-change', function(user) {
         expect(user._id).to.equal('superuser');
         resolve();
@@ -547,7 +547,7 @@ describe('User Model', function() {
   });
 
   it('should change the email', function() {
-    var emitterPromise = new BPromise(function(resolve) {
+    var emitterPromise = new Promise(function(resolve) {
       emitter.once('email-changed', function(user) {
         expect(user._id).to.equal('superuser');
         resolve();
@@ -569,7 +569,7 @@ describe('User Model', function() {
   });
 
   it('should create a new account from facebook auth', function() {
-    var emitterPromise = new BPromise(function(resolve) {
+    var emitterPromise = new Promise(function(resolve) {
       emitter.once('signup', function(user) {
         expect(user._id).to.equal('misterx');
         resolve();
@@ -858,11 +858,11 @@ describe('User Model', function() {
       .then(function(res) {
         var result = JSON.parse(res.text);
         if(result.db_name) {
-          return BPromise.resolve(true);
+          return Promise.resolve(true);
         }
       }, function(err) {
         if(err.status === 404) {
-          return BPromise.resolve(false);
+          return Promise.resolve(false);
         }
       });
   }

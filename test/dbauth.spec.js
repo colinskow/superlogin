@@ -69,7 +69,10 @@ describe('DBAuth', function() {
       .then(function() {
         return seed(userDB, userDesign);
       })
-      .then(function() {
+      .then(() => {
+        return userDB.get('_design/auth');
+      })
+      .then(() => {
         return dbAuth.storeKey(testUser._id, 'testkey', 'testpass', Date.now() + 60000, testUser.roles);
       })
       .then(function(newKey){
@@ -154,17 +157,16 @@ describe('DBAuth', function() {
       .then(function(finalDBName) {
         expect(finalDBName).to.equal('test_personal$test(2e)user(2d)31(40)cool(2e)com');
         newDB = new PouchDB(dbUrl + '/' + finalDBName);
-        console.log('DB created, retrieving security doc:');
+        // console.log('DB created, retrieving security doc.');
         return newDB.get('_security');
       }).then(function(secDoc) {
-          console.log('SecDoc: ', JSON.stringify(secDoc));
         expect(secDoc.admins.roles[0]).to.equal('admin_role');
         expect(secDoc.members.roles[0]).to.equal('member_role');
         expect(secDoc.members.names[1]).to.equal('key2');
         return newDB.get('_design/test');
       })
       .then(function(design){
-        console.log('Got design: ', JSON.stringify(design));
+        // console.log('Got design: ', JSON.stringify(design));
         expect(design.views.mytest.map).to.be.a('string');
         return newDB.destroy();
       });

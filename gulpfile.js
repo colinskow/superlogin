@@ -41,7 +41,5 @@ function final_test() {
   return src(['test/test.js'], {read: false})
     .pipe(mocha({timeout: 2000}));
 };
-
-exports.default = series(lint, middleware_test, dbauth_test) // , session_test, user_test, final_test
-// exports.default = series(final_test, user_test, mailer_test, session_test, middleware_test, dbauth_test, lint)
-// gulp.task('default', gulp.series('final-test', 'user-test', 'mailer-test', 'session-test', 'middleware-test', 'dbauth-test', 'lint'));
+// lint, middleware_test, dbauth_test, session_test,
+exports.default = series( user_test) // , , final_test

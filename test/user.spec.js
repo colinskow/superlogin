@@ -133,7 +133,7 @@ describe('User Model', function() {
   var verifyEmailToken;
 
   before(function() { // 'should prepare the database'
-    console.log('Seeding design docs');
+    console.log('Seeding design docs to ' + userDB.name);
     var userDesign = require('../designDocs/user-design');
     userDesign = util.addProvidersToDesignDoc(userConfig, userDesign);
     previous = Promise.resolve();
@@ -158,6 +158,7 @@ describe('User Model', function() {
     console.log('Creating User');
     var emitterPromise = new Promise(function(resolve) {
       emitter.once('signup', function(user) {
+          console.log('signup happened');
         expect(user._id).to.equal('superuser');
         resolve();
       });
@@ -172,6 +173,7 @@ describe('User Model', function() {
         userDoc.onCreate2 = true;
         return Promise.resolve(userDoc);
       });
+      console.log('now really creating the user.');
       return user.create(testUserForm, req);
     })
       .then(function() {

@@ -1,43 +1,47 @@
-var gulp   = require('gulp'),
+const { src, series }= require('gulp'),
   jshint = require('gulp-jshint'),
   stylish = require('jshint-stylish'),
   mocha = require('gulp-mocha');
 
-gulp.task('lint', function() {
-  return gulp.src(['./lib/**/*.js', './test/*.js'])
+function lint() {
+  return src(['./lib/**/*.js', './test/*.js'])
     .pipe(jshint({node: true, mocha: true}))
     .pipe(jshint.reporter(stylish))
     .pipe(jshint.reporter('fail'));
-});
+};
 
-gulp.task('middleware-test', gulp.series('lint'), function () {
-  return gulp.src(['test/middleware.spec.js'], {read: false})
+function middleware_test() {
+  return src(['test/middleware.spec.js'], {read: false})
     .pipe(mocha({timeout: 2000}));
-});
+};
 
-gulp.task('dbauth-test', gulp.series('middleware-test'), function () {
-  return gulp.src(['test/dbauth.spec.js'], {read: false})
+function dbauth_test() {
+    return src(['test/dbauth.spec.js'], {read: false})
+      .pipe(mocha({timeout: 2000}));
+};
+
+// these three tasks all just need dbauth
+function session_test() {
+    return src(['test/session.spec.js'], {read: false})
+      .pipe(mocha({timeout: 2000}));
+};
+
+function mailer_test() {
+  return src(['test/mailer.spec.js'], {read: false})
     .pipe(mocha({timeout: 2000}));
-});
+};
 
-gulp.task('session-test', gulp.series('dbauth-test'), function () {
-  return gulp.src(['test/session.spec.js'], {read: false})
+function user_test() {
+  return src(['test/user.spec.js'], {read: false})
     .pipe(mocha({timeout: 2000}));
-});
+};
 
-gulp.task('mailer-test', gulp.series('dbauth-test'), function () {
-  return gulp.src(['test/mailer.spec.js'], {read: false})
+// depends on user-test
+function final_test() {
+  return src(['test/test.js'], {read: false})
     .pipe(mocha({timeout: 2000}));
-});
+};
 
-gulp.task('user-test', gulp.series('dbauth-test'), function () {
-  return gulp.src(['test/user.spec.js'], {read: false})
-    .pipe(mocha({timeout: 2000}));
-});
-
-gulp.task('final-test', gulp.series('user-test'), function () {
-  return gulp.src(['test/test.js'], {read: false})
-    .pipe(mocha({timeout: 2000}));
-});
-
-gulp.task('default', gulp.series('final-test', 'user-test', 'mailer-test', 'session-test', 'middleware-test', 'lint'));
+exports.default = series(lint, middleware_test, dbauth_test) // , session_test, user_test, final_test
+// exports.default = series(final_test, user_test, mailer_test, session_test, middleware_test, dbauth_test, lint)
+// gulp.task('default', gulp.series('final-test', 'user-test', 'mailer-test', 'session-test', 'middleware-test', 'dbauth-test', 'lint'));

@@ -49,23 +49,23 @@
     "pouchdb-security-helper": "^2.1.2",
     "pouchdb-seed-design": "^0.3.0",
     "redis": "^2.8.0",
-    "sofa-model": "github:LyteFM/sofa-model",
+    "sofa-model": "github:LyteFM/sofa-model#replace-bluebird",
     "superagent": "^5.1.0",
     "urlsafe-base64": "1.0.0",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
     "body-parser": "^1.19.0",
-    "chai": "^3.5.0",
+    "chai": "^4.2.0",
     "gulp": "^4.0.2",
     "gulp-jshint": "^2.0.0",
     "gulp-mocha": "^6.0.0",
     "jshint": "^2.10.2",
     "jshint-stylish": "^2.1.0",
-    "mocha": "^5.2.0",
+    "mocha": "^6.1.4",
     "morgan": "^1.9.1",
     "rimraf": "^2.6.3",
-    "sinon": "^1.17.4",
-    "sinon-chai": "^2.8.0"
+    "sinon": "^7.3.2",
+    "sinon-chai": "^3.3.0"
   }
 }

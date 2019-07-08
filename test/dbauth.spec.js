@@ -1,5 +1,6 @@
 'use strict';
 var PouchDB = require('pouchdb');
+var securityPlugin = require('pouchdb-security-helper');
 var BPromise = require('bluebird');
 var seed = require('pouchdb-seed-design');
 var request = require('superagent');
@@ -9,6 +10,7 @@ var Configure = require('../lib/configure');
 var util = require('../lib/util.js');
 var config = require('./test.config.js');
 
+PouchDB.plugin(securityPlugin);
 var dbUrl = util.getDBURL(config.dbServer);
 
 var userDB = new PouchDB(dbUrl + "/cane_test_users");
@@ -56,8 +58,8 @@ describe('DBAuth', function() {
       })
       .then(function(result) {
         expect(result).to.equal(true);
-        var destroyDB = new PouchDB(dbUrl + '/' + testDBName);
-        return destroyDB.destroy();
+         var destroyDB = new PouchDB(dbUrl + '/' + testDBName);
+         return destroyDB.destroy();
       });
   });
 
@@ -152,14 +154,17 @@ describe('DBAuth', function() {
       .then(function(finalDBName) {
         expect(finalDBName).to.equal('test_personal$test(2e)user(2d)31(40)cool(2e)com');
         newDB = new PouchDB(dbUrl + '/' + finalDBName);
+        console.log('DB created, retrieving security doc:');
         return newDB.get('_security');
       }).then(function(secDoc) {
+          console.log('SecDoc: ', JSON.stringify(secDoc));
         expect(secDoc.admins.roles[0]).to.equal('admin_role');
         expect(secDoc.members.roles[0]).to.equal('member_role');
         expect(secDoc.members.names[1]).to.equal('key2');
         return newDB.get('_design/test');
       })
       .then(function(design){
+        console.log('Got design: ', JSON.stringify(design));
         expect(design.views.mytest.map).to.be.a('string');
         return newDB.destroy();
       });

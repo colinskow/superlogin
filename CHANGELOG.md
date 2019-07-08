@@ -1,5 +1,13 @@
 ## Change Log
 
+#### Updates and Adjustments: SuperloginX (0.7.1)
+* Removal of Bluebird in favour of native Promises
+* Adjustment of Travis CI for NodeJS 10 with ES6
+* Updating all packages to more secure versions
+* not allowing `_` as prefix for userDBs
+* Updated E-Mail Regex
+* Added two custom options to config (shorter PW-reset token, sending UUID with session info)
+
 #### Misc. Bug Fixes (0.6.1) 2016-04-02
 * Misc bugfixes
 * Documentation improvements

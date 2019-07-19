@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/LyteFM/superlogin.png?branch=master)](https://travis-ci.org/LyteFM/superlogin)
 
+[![Known Vulnerabilities](https://dev.snyk.io/test/github/LyteFM/superlogin/badge.svg)](https://dev.snyk.io/test/github/LyteFM/superlogin) 
+
 This is a fork of superlogin with all security-relevant packages updated and partially re-written in ES6 for NodeJS 10. 
 
 For issues and feature requests visit the [issue tracker](https://github.com/LyteFM/superlogin/issues).

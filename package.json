@@ -48,7 +48,7 @@
     "pouchdb-security-helper": "^2.1.2",
     "pouchdb-seed-design": "^0.3.0",
     "redis": "^2.8.0",
-    "sofa-model": "github:LyteFM/sofa-model#replace-bluebird",
+    "sofa-model": "github:LyteFM/sofa-model",
     "superagent": "^5.1.0",
     "urlsafe-base64": "1.0.0",
     "uuid": "^3.3.2"

@@ -69,7 +69,6 @@ describe('SuperLogin', function() {
 
   it('should create a new user', function() {
     return previous.then(() => {
-        console.log(JSON.stringify(config));
       return request
           .post(server + '/auth/register')
           .send(newUser)
@@ -156,9 +155,10 @@ describe('SuperLogin', function() {
         request
           .get(server + '/admin')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .then( res => {
-            //if (err) return reject(err);
-            expect(res.status).to.equal(403);
+          .then(() => {
+            reject('Admin access should have been rejected!');
+          }).catch( err => {
+            expect(err.status).to.equal(403);
             console.log('Admin access successfully denied.');
             resolve();
           });
@@ -210,9 +210,11 @@ describe('SuperLogin', function() {
         request
           .get(server + '/auth/session')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .then(res => {
-            //if (err) return reject(err);
-            expect(res.status).to.equal(401);
+          .then(() => {
+            reject('User should have been logged out!');
+          })
+          .catch(err => {
+            expect(err.status).to.equal(401);
             console.log('User has been successfully logged out on password reset.');
             resolve();
           });

@@ -2,7 +2,6 @@
 var events = require('events');
 var path = require('path');
 var PouchDB = require('pouchdb');
-var BPromise = require('bluebird');
 var Configure = require('../lib/configure');
 var User = require('../lib/user');
 var Mailer = require('../lib/mailer');
@@ -137,9 +136,11 @@ describe('User Model', function() {
     var userDesign = require('../designDocs/user-design');
     userDesign = util.addProvidersToDesignDoc(userConfig, userDesign);
     previous = Promise.resolve();
-
     return previous.then(function() {
       return seed(userDB, userDesign);
+    })
+    .then(() => {
+      return userDB.get('_design/auth');
     });
   });
 
@@ -155,10 +156,8 @@ describe('User Model', function() {
   });
 
   it('should save a new user', function() {
-    console.log('Creating User');
     var emitterPromise = new Promise(function(resolve) {
       emitter.once('signup', function(user) {
-          console.log('signup happened');
         expect(user._id).to.equal('superuser');
         resolve();
       });
@@ -173,7 +172,6 @@ describe('User Model', function() {
         userDoc.onCreate2 = true;
         return Promise.resolve(userDoc);
       });
-      console.log('now really creating the user.');
       return user.create(testUserForm, req);
     })
       .then(function() {
@@ -657,8 +655,7 @@ describe('User Model', function() {
 
     return previous
       .then(function() {
-        console.log('Generating username after conflict');
-        userDB.bulkDocs(docs);
+        return userDB.bulkDocs(docs);
       })
       .then(function() {
         return user.socialAuth('facebook', auth, profile, req);

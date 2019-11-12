@@ -3,7 +3,7 @@
 var request = require('superagent');
 var chai = require('chai');
 var sinon = require('sinon');
-var expect= chai.expect;
+var expect = chai.expect;
 chai.use(require('sinon-chai'));
 
 var Promise = require('bluebird');
@@ -13,7 +13,6 @@ var seed = require('pouchdb-seed-design');
 var util = require('../lib/util.js');
 
 describe('SuperLogin', function() {
-
   var app;
   var superlogin;
   var userDB, keysDB;
@@ -44,11 +43,11 @@ describe('SuperLogin', function() {
   };
 
   before(function() {
-    userDB = new PouchDB(dbUrl + "/sl_test-users");
-    keysDB = new PouchDB(dbUrl + "/sl_test-keys");
+    userDB = new PouchDB(dbUrl + '/sl_test-users');
+    keysDB = new PouchDB(dbUrl + '/sl_test-keys');
     app = require('./test-server')(config);
     app.superlogin.onCreate(function(userDoc, provider) {
-      userDoc.profile = {name: userDoc.name};
+      userDoc.profile = { name: userDoc.name };
       return Promise.resolve(userDoc);
     });
 
@@ -70,13 +69,13 @@ describe('SuperLogin', function() {
   it('should create a new user', function() {
     return previous.then(() => {
       return request
-          .post(server + '/auth/register')
-          .send(newUser)
-          .then(res => {
-            expect(res.status).to.equal(201);
-            expect(res.body.success).to.equal('User created.');
-            console.log('User created');
-            return Promise.resolve();
+        .post(server + '/auth/register')
+        .send(newUser)
+        .then(res => {
+          expect(res.status).to.equal(201);
+          expect(res.body.success).to.equal('User created.');
+          console.log('User created');
+          return Promise.resolve();
         });
     });
   });
@@ -84,21 +83,20 @@ describe('SuperLogin', function() {
   it('should verify the email', function() {
     var emailToken;
     return previous.then(function() {
-      return userDB.get('kewluzer')
+      return userDB
+        .get('kewluzer')
         .then(function(record) {
           emailToken = record.unverifiedEmail.token;
           return 1;
         })
         .then(function() {
-          return request
-              .get(server + '/auth/confirm-email/' + emailToken)
-              .then( res => {
-                expect(res.status).to.equal(200);
-                console.log('Email successfully verified.');
-                return Promise.resolve();
-              });
+          return request.get(server + '/auth/confirm-email/' + emailToken).then(res => {
+            expect(res.status).to.equal(200);
+            console.log('Email successfully verified.');
+            return Promise.resolve();
           });
         });
+    });
   });
 
   it('should login the user', function() {
@@ -106,7 +104,7 @@ describe('SuperLogin', function() {
       return request
         .post(server + '/auth/login')
         .send({ username: newUser.username, password: newUser.password })
-        .then( res => {
+        .then(res => {
           accessToken = res.body.token;
           accessPass = res.body.password;
           expect(res.status).to.equal(200);
@@ -125,7 +123,7 @@ describe('SuperLogin', function() {
         request
           .get(server + '/auth/session')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .then( res => {
+          .then(res => {
             expect(res.status).to.equal(200);
             console.log('Secure endpoint successfully accessed.');
             resolve();
@@ -140,7 +138,7 @@ describe('SuperLogin', function() {
         request
           .get(server + '/user')
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-          .then( res => {
+          .then(res => {
             expect(res.status).to.equal(200);
             console.log('Role successfully required.');
             resolve();
@@ -157,7 +155,8 @@ describe('SuperLogin', function() {
           .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
           .then(() => {
             reject('Admin access should have been rejected!');
-          }).catch( err => {
+          })
+          .catch(err => {
             expect(err.status).to.equal(403);
             console.log('Admin access successfully denied.');
             resolve();
@@ -167,13 +166,13 @@ describe('SuperLogin', function() {
   });
 
   it('should generate a forgot password token', function() {
-    var spySendMail = sinon.spy(app.superlogin.mailer, "sendEmail");
+    var spySendMail = sinon.spy(app.superlogin.mailer, 'sendEmail');
 
     return previous.then(function() {
       return new Promise(function(resolve, reject) {
         request
           .post(server + '/auth/forgot-password')
-          .send({email: newUser.email})
+          .send({ email: newUser.email })
           .then(res => {
             expect(res.status).to.equal(200);
             // keep unhashed token emailed to user.
@@ -188,19 +187,18 @@ describe('SuperLogin', function() {
 
   it('should reset the password', function() {
     return previous.then(function() {
-      return userDB.get(newUser.username)
-        .then(() => {
-          return new Promise(function(resolve, reject) {
-            request
-              .post(server + '/auth/password-reset')
-              .send({token: resetToken, password: 'newpass', confirmPassword: 'newpass'})
-              .then(res => {
-                expect(res.status).to.equal(200);
-                console.log('Password successfully reset.');
-                resolve();
-              });
-          });
+      return userDB.get(newUser.username).then(() => {
+        return new Promise(function(resolve, reject) {
+          request
+            .post(server + '/auth/password-reset')
+            .send({ token: resetToken, password: 'newpass', confirmPassword: 'newpass' })
+            .then(res => {
+              expect(res.status).to.equal(200);
+              console.log('Password successfully reset.');
+              resolve();
+            });
         });
+      });
     });
   });
 
@@ -263,50 +261,47 @@ describe('SuperLogin', function() {
 
   it('should change the password', function() {
     return previous.then(function() {
-      return userDB.get(newUser.username)
-        .then(function(resetUser) {
-          return new Promise(function(resolve, reject) {
-            request
-              .post(server + '/auth/password-change')
-              .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-              .send({currentPassword: 'newpass', newPassword: 'newpass2', confirmPassword: 'newpass2'})
-              .then(res => {
-                expect(res.status).to.equal(200);
-                console.log('Password successfully changed.');
-                resolve();
-              });
-          });
+      return userDB.get(newUser.username).then(function(resetUser) {
+        return new Promise(function(resolve, reject) {
+          request
+            .post(server + '/auth/password-change')
+            .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
+            .send({ currentPassword: 'newpass', newPassword: 'newpass2', confirmPassword: 'newpass2' })
+            .then(res => {
+              expect(res.status).to.equal(200);
+              console.log('Password successfully changed.');
+              resolve();
+            });
         });
+      });
     });
   });
 
   it('should logout the user', function() {
-    return previous
-      .then(function() {
+    return previous.then(function() {
+      return new Promise(function(resolve, reject) {
+        request
+          .post(server + '/auth/logout')
+          .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
+          .end(function(error, res) {
+            if (error || res.status !== 200) {
+              throw new Error('Failed to logout the user.');
+            }
+            expect(res.status).to.equal(200);
+            resolve();
+          });
+      }).then(function() {
         return new Promise(function(resolve, reject) {
           request
-            .post(server + '/auth/logout')
+            .get(server + '/auth/session')
             .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
             .end(function(error, res) {
-              if(error || res.status !== 200) {
-                throw new Error('Failed to logout the user.');
-              }
-              expect(res.status).to.equal(200);
+              expect(res.status).to.equal(401);
+              console.log('User has been successfully logged out.');
               resolve();
             });
-      })
-        .then(function() {
-          return new Promise(function(resolve, reject) {
-            request
-              .get(server + '/auth/session')
-              .set('Authorization', 'Bearer ' + accessToken + ':' + accessPass)
-              .end(function(error, res) {
-                expect(res.status).to.equal(401);
-                console.log('User has been successfully logged out.');
-                resolve();
-              });
-          });
         });
+      });
     });
   });
 
@@ -333,24 +328,20 @@ describe('SuperLogin', function() {
     return previous
       .then(function() {
         return new Promise(function(resolve, reject) {
-          request
-            .get(server + '/auth/validate-username/idontexist')
-            .end(function(error, res) {
-              expect(res.status).to.equal(200);
-              expect(res.body.ok).to.equal(true);
-              resolve();
-            });
+          request.get(server + '/auth/validate-username/idontexist').end(function(error, res) {
+            expect(res.status).to.equal(200);
+            expect(res.body.ok).to.equal(true);
+            resolve();
+          });
         });
       })
       .then(function() {
         return new Promise(function(resolve, reject) {
-          request
-            .get(server + '/auth/validate-username/kewluzer')
-            .end(function(error, res) {
-              expect(res.status).to.equal(409);
-              console.log('Validate Username is working');
-              resolve();
-            });
+          request.get(server + '/auth/validate-username/kewluzer').end(function(error, res) {
+            expect(res.status).to.equal(409);
+            console.log('Validate Username is working');
+            resolve();
+          });
         });
       });
   });
@@ -359,24 +350,20 @@ describe('SuperLogin', function() {
     return previous
       .then(function() {
         return new Promise(function(resolve, reject) {
-          request
-            .get(server + '/auth/validate-email/nobody@example.com')
-            .end(function(error, res) {
-              expect(res.status).to.equal(200);
-              expect(res.body.ok).to.equal(true);
-              resolve();
-            });
+          request.get(server + '/auth/validate-email/nobody@example.com').end(function(error, res) {
+            expect(res.status).to.equal(200);
+            expect(res.body.ok).to.equal(true);
+            resolve();
+          });
         });
       })
       .then(function() {
         return new Promise(function(resolve, reject) {
-          request
-            .get(server + '/auth/validate-username/kewluzer@example.com')
-            .end(function(error, res) {
-              expect(res.status).to.equal(409);
-              console.log('Validate Email is working');
-              resolve();
-            });
+          request.get(server + '/auth/validate-username/kewluzer@example.com').end(function(error, res) {
+            expect(res.status).to.equal(409);
+            console.log('Validate Email is working');
+            resolve();
+          });
         });
       });
   });
@@ -387,7 +374,7 @@ describe('SuperLogin', function() {
         .post(server + '/auth/login')
         .send({ username: username, password: password })
         .end(function(error, res) {
-          resolve({status: res.status, message: res.body.message});
+          resolve({ status: res.status, message: res.body.message });
         });
     });
   }
@@ -435,5 +422,4 @@ describe('SuperLogin', function() {
         return Promise.resolve();
       });
   });
-
 });

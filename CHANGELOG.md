@@ -7,6 +7,8 @@
 * not allowing `_` as prefix for userDBs
 * Updated E-Mail Regex
 * Added two custom options to config (shorter PW-reset token, sending UUID with session info)
+* returning the actual error msg, not just `"Username not in use"`in `validateUsername`
+* forked and updated `sofa-model`
 
 #### Misc. Bug Fixes (0.6.1) 2016-04-02
 * Misc bugfixes
